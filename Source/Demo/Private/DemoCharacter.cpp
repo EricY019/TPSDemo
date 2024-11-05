@@ -10,7 +10,6 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 
-
 ADemoCharacter::ADemoCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
