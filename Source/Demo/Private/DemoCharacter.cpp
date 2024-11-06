@@ -9,6 +9,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
+#include "Weapon.h"
+#include "Net/UnrealNetwork.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -41,9 +43,21 @@ ADemoCharacter::ADemoCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 }
 
+void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// Replicate OverlappingWeapon to owner proxies
+	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ADemoCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -99,10 +113,31 @@ void ADemoCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void ADemoCharacter::Tick(float DeltaTime)
+void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
-	Super::Tick(DeltaTime);
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickUpWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled()) // true if this character is controlled by local player (server player)
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickUpWidget(true);
+		}
+	}
 }
 
-
-
+void ADemoCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	// LastWeapon be the last value before replication happens
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickUpWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickUpWidget(false);
+	}
+}
