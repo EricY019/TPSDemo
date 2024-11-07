@@ -11,6 +11,7 @@
 #include "InputAction.h"
 #include "Weapon.h"
 #include "Net/UnrealNetwork.h"
+#include "CharacterComponents/CombatComponent.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -41,6 +42,10 @@ ADemoCharacter::ADemoCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>("FollowCamera");
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Create Combat
+	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
+	Combat->SetIsReplicated((true)); // Set as replicated component, no need to register
 }
 
 void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -63,7 +68,6 @@ void ADemoCharacter::Tick(float DeltaTime)
 void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -82,6 +86,17 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADemoCharacter::Move);
 		// Look
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADemoCharacter::Look);
+		// Equip Weapon
+		EnhancedInputComponent->BindAction(EquipWeaponAction, ETriggerEvent::Triggered, this, &ADemoCharacter::EquipButtonPressed);
+	}
+}
+
+void ADemoCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
 	}
 }
 
@@ -113,6 +128,29 @@ void ADemoCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void ADemoCharacter::ServerEquipButtonPressed_Implementation()
+{	// Defines what happens on server
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+void ADemoCharacter::EquipButtonPressed()
+{
+	if (Combat)
+	{
+		if (HasAuthority()) // server-side
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else // client-side
+		{
+			ServerEquipButtonPressed();
+		}
+	}
+}
+
 void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
 	if (OverlappingWeapon)
@@ -130,8 +168,7 @@ void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 }
 
 void ADemoCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
-{
-	// LastWeapon be the last value before replication happens
+{	// LastWeapon be the last value before replication happens
 	if (OverlappingWeapon)
 	{
 		OverlappingWeapon->ShowPickUpWidget(true);

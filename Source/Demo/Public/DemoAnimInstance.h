@@ -20,7 +20,7 @@ public:
 private:
 	// The character AnimInstance controls
 	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	ADemoCharacter* DemoCharacter;
+	TObjectPtr<ADemoCharacter> DemoCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float VelocityZ;

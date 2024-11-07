@@ -26,8 +26,12 @@ public:
 	AWeapon();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	// Setup Replication
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// Show PickupWidget
 	void ShowPickUpWidget(bool bShowWidget) const;
+	// Set WeaponState
+	void SetWeaponState(EWeaponState State);
 
 protected:
 	// Called when the game starts or when spawned
@@ -56,14 +60,21 @@ protected:
 private:
 	// Weapon properties
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	USkeletalMeshComponent* WeaponMesh;
+	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	USphereComponent* AreaSphere;
-	
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	TObjectPtr<USphereComponent> AreaSphere;
+	// WeaponState replicates from server to client
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
-
+	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	UWidgetComponent* PickupWidget;
+	TObjectPtr<UWidgetComponent> PickupWidget;
+
+	// Called on client when WeaponState is replicated
+	UFUNCTION()
+	void OnRep_WeaponState();
+
+public:
+	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() {return AreaSphere; }
 };

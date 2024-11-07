@@ -2,11 +2,12 @@
 #include "DemoCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AWeapon::AWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
+	bReplicates = true; // replicating variable
 
 	// Create WeaponMesh object, set WeaponMesh as rootcomponent
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
@@ -52,8 +53,15 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
+void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// Register replicating varaible
+	DOREPLIFETIME(AWeapon, WeaponState);
+}
+
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                              UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Set OverlappingWeapon to this weapon
 	if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
@@ -69,6 +77,31 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
 	{
 		DemoCharacter->SetOverlappingWeapon(nullptr);
+	}
+}
+
+void AWeapon::SetWeaponState(EWeaponState State)
+{
+	WeaponState = State; // calls OnRep_WeaponState on clients
+	switch (WeaponState)
+	{
+	case EWeaponState::Ews_Equipped:
+		// Hide pickup widget, disable collision
+		ShowPickUpWidget(false);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+	
+}
+
+void AWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::Ews_Equipped:
+		// Hide PickUpWidget
+		ShowPickUpWidget(false);
+		break;
 	}
 }
 
