@@ -4,8 +4,8 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-class AWeapon;
 class ADemoCharacter;
+class AWeapon;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEMO_API UCombatComponent : public UActorComponent
@@ -15,10 +15,12 @@ class DEMO_API UCombatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	// DemoCharacter can access members of CombatComponent
 	friend class ADemoCharacter;
+	// Set replicates
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	// Equip weapon
 	void EquipWeapon(AWeapon* WeaponToEquip);
 	
@@ -27,6 +29,11 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	TObjectPtr<AWeapon> EquippedWeapon;
 	TObjectPtr<ADemoCharacter> Character;
+
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
+	TObjectPtr<AWeapon> EquippedWeapon;
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 };

@@ -18,20 +18,21 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 private:
-	// The character AnimInstance controls
 	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<ADemoCharacter> DemoCharacter;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float VelocityZ;
+	TObjectPtr<ADemoCharacter> DemoCharacter; // Character AnimInstance controls
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	float Speed;
+	float VelocityZ; // Character Z-axis velocity
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float Speed; // Character XY-axis speed
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bIsInAir; // Character in air 
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bIsAccelerating; // Character has some key pressed on
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool bIsInAir;
-
-	// If some key is pressed on
-	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool bIsAccelerating;
+	bool bWeaponEquipped; // Character has a weapon equipped
 };

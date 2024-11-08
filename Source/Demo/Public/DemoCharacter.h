@@ -26,12 +26,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// Setup Replication
+	// Set Replicates
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// Called on server, set OverlappingWeapon as weapon
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	// Init component reference
 	virtual void PostInitializeComponents() override;
+	// Determines if this character equips weapon
+	UPROPERTY(VisibleAnywhere, Replicated)
+	bool IsWeaponEquipped;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -67,7 +70,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> EquipWeaponAction;
 
-	// Overlapping Weapon, replicates from server to client
+	// Replicate variable from server to client
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	TObjectPtr<AWeapon> OverlappingWeapon;
 	
@@ -75,11 +78,11 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	// RPC, Called on clients to execute on server
-	UFUNCTION(Server, Reliable)
-	void ServerEquipButtonPressed();
-
 	// Combat Component
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> Combat;
+	
+	// RPC, Called on clients to execute on server
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
 };

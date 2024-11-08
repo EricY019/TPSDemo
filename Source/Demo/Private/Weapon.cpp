@@ -6,8 +6,8 @@
 
 AWeapon::AWeapon()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true; // replicating variable
+	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true; // register replicates
 
 	// Create WeaponMesh object, set WeaponMesh as rootcomponent
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
@@ -27,7 +27,6 @@ AWeapon::AWeapon()
 	// Create PickupWidget object
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
-	
 }
 
 void AWeapon::BeginPlay()
@@ -56,8 +55,7 @@ void AWeapon::Tick(float DeltaTime)
 void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// Register replicating varaible
-	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, WeaponState); // Register WeaponState to all clients
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

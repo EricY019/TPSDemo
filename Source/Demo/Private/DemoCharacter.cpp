@@ -43,16 +43,17 @@ ADemoCharacter::ADemoCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Create Combat
+	// Create Combat, replicated component
 	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
-	Combat->SetIsReplicated((true)); // Set as replicated component, no need to register
+	
+	IsWeaponEquipped = false;
 }
 
 void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// Replicate OverlappingWeapon to owner proxies
-	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly); // Replicate OverlappingWeapon to owner proxies
+	DOREPLIFETIME(ADemoCharacter, IsWeaponEquipped); // Replicate IsEquippedWeapon to all clients
 }
 
 void ADemoCharacter::BeginPlay()

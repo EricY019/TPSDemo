@@ -8,7 +8,6 @@
 void UDemoAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-	
 	DemoCharacter = Cast<ADemoCharacter>(TryGetPawnOwner());
 }
 
@@ -23,11 +22,14 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 	if (DemoCharacter == nullptr) return;
 	
-	// Init velocityZ, speed, bIsInAir, bIsAccelerating
+	// Update velocityZ, speed, bIsInAir, bIsAccelerating
 	FVector Velocity = DemoCharacter->GetVelocity();
 	VelocityZ = Velocity.Z;
 	Velocity.Z = 0.f;
 	Speed = Velocity.Size();
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
-	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true :false;
+	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
+
+	// Update bWeaponEquipped
+	bWeaponEquipped = DemoCharacter->IsWeaponEquipped;
 }

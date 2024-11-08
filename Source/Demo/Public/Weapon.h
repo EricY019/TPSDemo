@@ -64,7 +64,8 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USphereComponent> AreaSphere;
-	// WeaponState replicates from server to client
+	
+	// Replicate variable from server to client
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
 	
