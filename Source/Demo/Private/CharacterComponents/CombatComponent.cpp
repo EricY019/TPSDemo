@@ -21,11 +21,6 @@ void UCombatComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("OnRep_EquippedWeapon")));
-}
-
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -44,5 +39,4 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
-	Character->IsWeaponEquipped = true;
 }

@@ -33,8 +33,10 @@ public:
 	// Init component reference
 	virtual void PostInitializeComponents() override;
 	// Determines if this character equips weapon
-	UPROPERTY(VisibleAnywhere, Replicated)
-	bool IsWeaponEquipped;
+	bool IsWeaponEquipped();
+	// OverlappingWeapon, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	TObjectPtr<AWeapon> OverlappingWeapon;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -69,10 +71,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> EquipWeaponAction;
-
-	// Replicate variable from server to client
-	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	TObjectPtr<AWeapon> OverlappingWeapon;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()

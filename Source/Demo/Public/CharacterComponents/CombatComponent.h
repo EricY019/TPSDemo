@@ -31,9 +31,6 @@ protected:
 private:
 	TObjectPtr<ADemoCharacter> Character;
 
-	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
+	UPROPERTY(Replicated)
 	TObjectPtr<AWeapon> EquippedWeapon;
-
-	UFUNCTION()
-	void OnRep_EquippedWeapon();
 };

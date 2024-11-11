@@ -45,15 +45,12 @@ ADemoCharacter::ADemoCharacter()
 
 	// Create Combat, replicated component
 	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
-	
-	IsWeaponEquipped = false;
 }
 
 void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly); // Replicate OverlappingWeapon to owner proxies
-	DOREPLIFETIME(ADemoCharacter, IsWeaponEquipped); // Replicate IsEquippedWeapon to all clients
 }
 
 void ADemoCharacter::BeginPlay()
@@ -99,6 +96,11 @@ void ADemoCharacter::PostInitializeComponents()
 	{
 		Combat->Character = this;
 	}
+}
+
+bool ADemoCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
 }
 
 void ADemoCharacter::Move(const FInputActionValue& Value)

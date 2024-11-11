@@ -32,6 +32,9 @@ public:
 	void ShowPickUpWidget(bool bShowWidget) const;
 	// Set WeaponState
 	void SetWeaponState(EWeaponState State);
+	// WeaponState, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
+	EWeaponState WeaponState;
 
 protected:
 	// Called when the game starts or when spawned
@@ -64,10 +67,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<USphereComponent> AreaSphere;
-	
-	// Replicate variable from server to client
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-	EWeaponState WeaponState;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<UWidgetComponent> PickupWidget;

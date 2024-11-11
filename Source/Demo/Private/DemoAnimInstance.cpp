@@ -30,6 +30,6 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 
-	// Update bWeaponEquipped
-	bWeaponEquipped = DemoCharacter->IsWeaponEquipped;
+	// Update bWeaponEquipped(
+	bWeaponEquipped = DemoCharacter->IsWeaponEquipped();
 }
