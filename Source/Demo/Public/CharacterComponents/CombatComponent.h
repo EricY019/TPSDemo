@@ -27,10 +27,21 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	// Set aiming
+	void SetAiming(bool bIsAiming);
+	// RPC, clients call on server to execute
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
 
 private:
 	TObjectPtr<ADemoCharacter> Character;
 
+public:
+	// Equipped weapon, replicated variable
 	UPROPERTY(Replicated)
 	TObjectPtr<AWeapon> EquippedWeapon;
+	
+	// isAiming, replicated variable
+	UPROPERTY(Replicated)
+	bool bAiming;
 };

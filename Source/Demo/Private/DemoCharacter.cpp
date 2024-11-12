@@ -86,6 +86,9 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADemoCharacter::Look);
 		// Equip Weapon
 		EnhancedInputComponent->BindAction(EquipWeaponAction, ETriggerEvent::Triggered, this, &ADemoCharacter::EquipButtonPressed);
+		// Aim
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ADemoCharacter::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ADemoCharacter::AimButtonReleased);
 	}
 }
 
@@ -101,6 +104,11 @@ void ADemoCharacter::PostInitializeComponents()
 bool ADemoCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ADemoCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
 }
 
 void ADemoCharacter::Move(const FInputActionValue& Value)
@@ -151,6 +159,22 @@ void ADemoCharacter::EquipButtonPressed()
 		{
 			ServerEquipButtonPressed();
 		}
+	}
+}
+
+void ADemoCharacter::AimButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void ADemoCharacter::AimButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(false);
 	}
 }
 

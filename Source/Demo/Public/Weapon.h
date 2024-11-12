@@ -32,9 +32,8 @@ public:
 	void ShowPickUpWidget(bool bShowWidget) const;
 	// Set WeaponState
 	void SetWeaponState(EWeaponState State);
-	// WeaponState, replicated variable
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-	EWeaponState WeaponState;
+	// GetAreaSphere
+	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() {return AreaSphere; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -76,5 +75,7 @@ private:
 	void OnRep_WeaponState();
 
 public:
-	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() {return AreaSphere; }
+	// WeaponState, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
+	EWeaponState WeaponState;
 };

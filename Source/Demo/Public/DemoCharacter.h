@@ -34,17 +34,18 @@ public:
 	virtual void PostInitializeComponents() override;
 	// Determines if this character equips weapon
 	bool IsWeaponEquipped();
-	// OverlappingWeapon, replicated variable
-	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	TObjectPtr<AWeapon> OverlappingWeapon;
+	// Determines if this character is aiming
+	bool IsAiming();
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Handle 2d move, 2d camera turn, equip weapon
+	// Handle 2d move, 2d camera turn, equip weapon, aim
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
 
 private:
 	// SpringArm for Camera
@@ -59,7 +60,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMapping;
 
-	// Enhanced input components: Jump, move, look
+	// Enhanced input components: Jump, move, look, equip, aim
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
 	
@@ -71,6 +72,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> EquipWeaponAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> AimAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -80,7 +84,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> Combat;
 	
-	// RPC, Called on clients to execute on server
+	// RPC, clients call for server to execute
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
+	
+public:
+	// OverlappingWeapon, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	TObjectPtr<AWeapon> OverlappingWeapon;
 };

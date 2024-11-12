@@ -22,14 +22,13 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 	if (DemoCharacter == nullptr) return;
 	
-	// Update velocityZ, speed, bIsInAir, bIsAccelerating
+	// Update character movements
 	FVector Velocity = DemoCharacter->GetVelocity();
 	VelocityZ = Velocity.Z;
 	Velocity.Z = 0.f;
 	Speed = Velocity.Size();
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
-
-	// Update bWeaponEquipped(
 	bWeaponEquipped = DemoCharacter->IsWeaponEquipped();
+	bAiming = DemoCharacter->IsAiming();
 }
