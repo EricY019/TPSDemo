@@ -32,13 +32,16 @@ protected:
 	// RPC, clients call on server to execute
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
+	// Called on clients when EquippedWeapon is replicated
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 
 private:
 	TObjectPtr<ADemoCharacter> Character;
 
 public:
 	// Equipped weapon, replicated variable
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	TObjectPtr<AWeapon> EquippedWeapon;
 	
 	// isAiming, replicated variable

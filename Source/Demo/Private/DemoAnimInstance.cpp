@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DemoAnimInstance.h"
 #include "DemoCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UDemoAnimInstance::NativeInitializeAnimation()
 {
@@ -26,9 +24,15 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FVector Velocity = DemoCharacter->GetVelocity();
 	VelocityZ = Velocity.Z;
 	Velocity.Z = 0.f;
-	Speed = Velocity.Size();
+	Speed = Velocity.Size(); 
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	bWeaponEquipped = DemoCharacter->IsWeaponEquipped();
 	bAiming = DemoCharacter->IsAiming();
+	// Update character yaw
+	FRotator AimRotation = DemoCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(Velocity);
+	FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, Delta, DeltaTime, 6.f);
+	YawOffset = DeltaRotation.Yaw;
 }

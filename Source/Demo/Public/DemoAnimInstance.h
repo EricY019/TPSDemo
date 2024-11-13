@@ -32,4 +32,8 @@ private:
 	bool bWeaponEquipped; // Character has a weapon equipped
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bAiming; // Character is aiming
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float YawOffset; // Character yaw
+
+	FRotator DeltaRotation; // interpolate strafing
 };
