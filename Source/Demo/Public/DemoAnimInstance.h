@@ -34,6 +34,9 @@ private:
 	bool bAiming; // Character is aiming
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float YawOffset; // Character yaw
-
 	FRotator DeltaRotation; // interpolate strafing
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float AO_Yaw; // yaw to aim offset
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float AO_Pitch; // pitch to aim offset
 };

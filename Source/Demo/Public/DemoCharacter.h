@@ -35,7 +35,11 @@ public:
 	// Determines if this character equips weapon
 	bool IsWeaponEquipped();
 	// Determines if this character is aiming
-	bool IsAiming();
+	bool IsAiming();\
+	// AO_Yaw getter
+	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
+	// AO_Pitch getter
+	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -46,6 +50,8 @@ protected:
 	void EquipButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	// Obtain aiming offset, called per frame
+	void AimOffset(float DeltaTime);
 
 private:
 	// SpringArm for Camera
@@ -79,7 +85,7 @@ private:
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
-
+	
 	// Combat Component
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> Combat;
@@ -87,6 +93,11 @@ private:
 	// RPC, clients call for server to execute
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
+	
+	// for aim offset calculation
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
 	
 public:
 	// OverlappingWeapon, replicated variable

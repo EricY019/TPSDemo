@@ -24,7 +24,7 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FVector Velocity = DemoCharacter->GetVelocity();
 	VelocityZ = Velocity.Z;
 	Velocity.Z = 0.f;
-	Speed = Velocity.Size(); 
+	Speed = Velocity.Size();
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	bWeaponEquipped = DemoCharacter->IsWeaponEquipped();
@@ -35,4 +35,7 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, Delta, DeltaTime, 6.f);
 	YawOffset = DeltaRotation.Yaw;
+	// Update aiming offset
+	AO_Yaw = DemoCharacter->GetAOYaw();
+	AO_Pitch = DemoCharacter->GetAOPitch();
 }

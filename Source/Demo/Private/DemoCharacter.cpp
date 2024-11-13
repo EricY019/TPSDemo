@@ -9,6 +9,7 @@
 #include "Weapon.h"
 #include "Net/UnrealNetwork.h"
 #include "CharacterComponents/CombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -58,6 +59,7 @@ void ADemoCharacter::BeginPlay()
 void ADemoCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AimOffset(DeltaTime);
 }
 
 void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -173,6 +175,32 @@ void ADemoCharacter::AimButtonReleased()
 	{
 		Combat->SetAiming(false);
 	}
+}
+
+void ADemoCharacter::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
+	
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+	// Set aiming offset yaw
+	if (Speed == 0.f && !bIsInAir) // standing still, and not jumping
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false; // do not use controller yaw when setting aim offset
+	}
+	if (Speed > 0.f || bIsInAir) // running, or jumping
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+	// Set aiming offset pitch
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
 
 void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
