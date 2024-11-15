@@ -20,7 +20,7 @@ ADemoCharacter::ADemoCharacter()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationPitch = false;
 	
-	// Character movement configure
+	// Character movement config
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // rotation rate
 	GetCharacterMovement()->JumpZVelocity = 700.f;
@@ -54,6 +54,9 @@ void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// Aiming offset config
+	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 }
 
 void ADemoCharacter::Tick(float DeltaTime)
@@ -193,7 +196,7 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 		AO_Yaw = DeltaAimRotation.Yaw;
 		bUseControllerRotationYaw = false; // do not use controller yaw when setting aim offset
 	}
-	if (Speed > 0.f || bIsInAir) // running, or jumping
+	else if (Speed > 0.f || bIsInAir) // running, or jumping
 	{
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
@@ -201,6 +204,13 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 	}
 	// Set aiming offset pitch
 	AO_Pitch = GetBaseAimRotation().Pitch;
+	// Pitch is bounded in [0, 360), [-90, 0) pitch is rounded to [270, 360) on server side
+	if (AO_Pitch > 90.f && !IsLocallyControlled())
+	{	// 360.f - AO_Pitch does not work
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
