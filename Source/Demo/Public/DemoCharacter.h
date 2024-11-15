@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Demo/Public/CharacterTypes/TurningInPlace.h"
 #include "DemoCharacter.generated.h"
 
 class USpringArmComponent;
@@ -40,6 +41,8 @@ public:
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
 	// AO_Pitch getter
 	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
+	// TurningInPlace getter
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -94,10 +97,15 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 	
-	// for aim offset calculation
+	// Aim offset calculation
 	float AO_Yaw;
+	float InterpAO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation;
+
+	// Turning in place
+	ETurningInPlace TurningInPlace;
+	void TurnInPlace(float DeltaTime);
 	
 public:
 	// OverlappingWeapon, replicated variable

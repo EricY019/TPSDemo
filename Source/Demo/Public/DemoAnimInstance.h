@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Demo/Public/CharacterTypes/TurningInPlace.h"
 #include "DemoAnimInstance.generated.h"
 
 class ADemoCharacter;
@@ -39,4 +40,6 @@ private:
 	float AO_Yaw; // yaw to aim offset
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch; // pitch to aim offset
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	ETurningInPlace TurningInPlace; // turning in place
 };

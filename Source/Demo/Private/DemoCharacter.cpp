@@ -19,7 +19,6 @@ ADemoCharacter::ADemoCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationPitch = false;
-	
 	// Character movement config
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // rotation rate
@@ -43,6 +42,13 @@ ADemoCharacter::ADemoCharacter()
 
 	// Create Combat, replicated component
 	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
+
+	// Turning in place
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+	
+	// Net update frequency
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.F;
 }
 
 void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -188,20 +194,28 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 	Velocity.Z = 0.f;
 	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
+	
 	// Set aiming offset yaw
-	if (Speed == 0.f && !bIsInAir) // standing still, and not jumping
+	if (Speed == 0.f && !bIsInAir) // standing still
 	{
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
-		bUseControllerRotationYaw = false; // do not use controller yaw when setting aim offset
+		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
+		{
+			InterpAO_Yaw = AO_Yaw;
+		}
+		bUseControllerRotationYaw = true;
+		TurnInPlace(DeltaTime); // turn in place only when standing still
 	}
-	else if (Speed > 0.f || bIsInAir) // running, or jumping
+	else if (Speed > 0.f || bIsInAir) // running / jumping
 	{
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning; // not turning if running / jumping
 	}
+	
 	// Set aiming offset pitch
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	// Pitch is bounded in [0, 360), [-90, 0) pitch is rounded to [270, 360) on server side
@@ -210,6 +224,29 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ADemoCharacter::TurnInPlace(float DeltaTime)
+{
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+	// reset interpAo_Yaw to 0 if turning
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+		if (FMath::Abs(AO_Yaw) < 15.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
 	}
 }
 
