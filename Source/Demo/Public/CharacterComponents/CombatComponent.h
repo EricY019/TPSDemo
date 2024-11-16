@@ -35,9 +35,12 @@ protected:
 	// Called on clients when EquippedWeapon is replicated
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	// Called when fire button pressed
+	void FireButtonPressed(bool bPressed);
 
 private:
 	TObjectPtr<ADemoCharacter> Character;
+	bool bFireButtonPressed;
 
 public:
 	// Equipped weapon, replicated variable

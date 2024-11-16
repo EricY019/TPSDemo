@@ -10,6 +10,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CharacterComponents/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "DemoAnimInstance.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -97,6 +98,9 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		// Aim
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ADemoCharacter::AimButtonPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ADemoCharacter::AimButtonReleased);
+		// Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ADemoCharacter::FireButtonPressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ADemoCharacter::FireButtonReleased);
 	}
 }
 
@@ -117,6 +121,19 @@ bool ADemoCharacter::IsWeaponEquipped()
 bool ADemoCharacter::IsAiming()
 {
 	return (Combat && Combat->bAiming);
+}
+
+void ADemoCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName = bAiming ? FName("RifleAim") : FName("RifleHip"); // select section by if aiming
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
 }
 
 void ADemoCharacter::Move(const FInputActionValue& Value)
@@ -183,6 +200,22 @@ void ADemoCharacter::AimButtonReleased()
 	if (Combat)
 	{
 		Combat->SetAiming(false);
+	}
+}
+
+void ADemoCharacter::FireButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(true);
+	}
+}
+
+void ADemoCharacter::FireButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->FireButtonPressed(false);
 	}
 }
 

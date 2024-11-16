@@ -13,6 +13,7 @@ class UInputMappingContext;
 class UInputAction;
 class AWeapon;
 class UCombatComponent;
+class UAnimMontage;
 struct FInputActionValue;
 
 UCLASS()
@@ -36,7 +37,9 @@ public:
 	// Determines if this character equips weapon
 	bool IsWeaponEquipped();
 	// Determines if this character is aiming
-	bool IsAiming();\
+	bool IsAiming();
+	// Play fire montage if aiming
+	void PlayFireMontage(bool bAiming);
 	// AO_Yaw getter
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
 	// AO_Pitch getter
@@ -47,12 +50,14 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Handle 2d move, 2d camera turn, equip weapon, aim
+	// Handle 2d move, 2d camera turn, equip weapon, aim, fire
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void FireButtonPressed();
+	void FireButtonReleased();
 	// Obtain aiming offset, called per frame
 	void AimOffset(float DeltaTime);
 
@@ -84,6 +89,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> AimAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> FireAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -106,6 +114,10 @@ private:
 	// Turning in place
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
+
+	// Anim montage for firing weapon
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
 	
 public:
 	// OverlappingWeapon, replicated variable
