@@ -2,6 +2,7 @@
 #include "DemoCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Weapon.h"
 
 void UDemoAnimInstance::NativeInitializeAnimation()
 {
@@ -28,6 +29,7 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsInAir = DemoCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
 	bWeaponEquipped = DemoCharacter->IsWeaponEquipped();
+	EquippedWeapon = DemoCharacter->GetEquippedWeapon();
 	bAiming = DemoCharacter->IsAiming();
 	TurningInPlace = DemoCharacter->GetTurningInPlace();
 	// Update character yaw
@@ -39,4 +41,16 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// Update aiming offset
 	AO_Yaw = DemoCharacter->GetAOYaw();
 	AO_Pitch = DemoCharacter->GetAOPitch();
+	// Update IK
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && DemoCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), RTS_World);
+		// transform world space to bone space, output on outposition, outrotation
+		FVector OutPosition;
+		FRotator OutRotation;
+		DemoCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(),
+			FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 }

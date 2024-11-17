@@ -40,11 +40,13 @@ public:
 	bool IsAiming();
 	// Play fire montage if aiming
 	void PlayFireMontage(bool bAiming);
-	// AO_Yaw getter
+	// Get AO_Yaw
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
-	// AO_Pitch getter
+	// Get AO_Pitch
 	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
-	// TurningInPlace getter
+	// Get EquippedWeapon
+	AWeapon* GetEquippedWeapon();
+	// Get TurningInPlace
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	
 protected:

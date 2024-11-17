@@ -6,6 +6,7 @@
 
 class USphereComponent;
 class UWidgetComponent;
+class UAnimationAsset;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -32,8 +33,12 @@ public:
 	void ShowPickUpWidget(bool bShowWidget) const;
 	// Set WeaponState
 	void SetWeaponState(EWeaponState State);
-	// GetAreaSphere
-	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() {return AreaSphere; }
+	// Get AreaSphere
+	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
+	// Get WeaponMesh
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
+	// Firing
+	void Fire();
 
 protected:
 	// Called when the game starts or when spawned
@@ -73,6 +78,9 @@ private:
 	// Called on client when WeaponState is replicated
 	UFUNCTION()
 	void OnRep_WeaponState();
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UAnimationAsset* FireAnimation; // play asset/montage on weapons
 
 public:
 	// WeaponState, replicated variable

@@ -123,6 +123,12 @@ bool ADemoCharacter::IsAiming()
 	return (Combat && Combat->bAiming);
 }
 
+AWeapon* ADemoCharacter::GetEquippedWeapon()
+{
+	if (Combat == nullptr) return nullptr;
+	return Combat->EquippedWeapon;
+}
+
 void ADemoCharacter::PlayFireMontage(bool bAiming)
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
