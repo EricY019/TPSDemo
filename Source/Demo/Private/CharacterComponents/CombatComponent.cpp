@@ -26,7 +26,7 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
-	ServerSetAiming(bIsAiming); // notify server if client is aiming
+	ServerSetAiming(bIsAiming); // notify authoritative server
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -47,7 +47,21 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire();
+		ServerFire();
 	}
+}
+
+void UCombatComponent::ServerFire_Implementation()
+{
+	MulticastFire();
+}
+
+void UCombatComponent::MulticastFire_Implementation()
+{
+	if (Character->IsLocallyControlled()) return;
+	// play firing animation on other clients
+	Character->PlayFireMontage(bAiming);
+	EquippedWeapon->PlayFireAnim();
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)

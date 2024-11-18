@@ -29,7 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 	// Set aiming
 	void SetAiming(bool bIsAiming);
-	// RPC, clients call on server to execute
+	// RPC, server sets aiming, called by client
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 	// Called on clients when EquippedWeapon is replicated
@@ -37,6 +37,12 @@ protected:
 	void OnRep_EquippedWeapon();
 	// Called when fire button pressed
 	void FireButtonPressed(bool bPressed);
+	// RPC, server fires, called by client
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+	// Multicast to all clients, called by server
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFire();
 
 private:
 	TObjectPtr<ADemoCharacter> Character;

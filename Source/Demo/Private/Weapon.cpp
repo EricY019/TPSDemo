@@ -34,7 +34,7 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	// Server-side validation: Enable AreaSphere collision; Bind overlap, end overlap
+	// Local pickup widget
 	if (HasAuthority())
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -110,6 +110,15 @@ void AWeapon::ShowPickUpWidget(bool bShowWidget) const
 	if (PickupWidget)
 	{
 		PickupWidget->SetVisibility(bShowWidget);
+	}
+}
+
+
+void AWeapon::PlayFireAnim()
+{
+	if (FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 }
 

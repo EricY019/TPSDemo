@@ -38,6 +38,7 @@ public:
 	// Get WeaponMesh
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
 	// Firing
+	void PlayFireAnim();
 	void Fire();
 
 protected:
