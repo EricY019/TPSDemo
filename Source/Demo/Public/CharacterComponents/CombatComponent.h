@@ -4,6 +4,8 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+
+#define TRACE_LENGTH 80000
 class ADemoCharacter;
 class AWeapon;
 
@@ -43,10 +45,14 @@ protected:
 	// Multicast to all clients, called by server
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
+	// Build trace given a hit result
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 private:
 	TObjectPtr<ADemoCharacter> Character;
 	bool bFireButtonPressed;
+	// Hit target set every tick
+	FVector HitTarget;
 
 public:
 	// Equipped weapon, replicated variable

@@ -37,9 +37,10 @@ public:
 	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
 	// Get WeaponMesh
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
-	// Firing
+	// Play firing animation, called on server
 	void PlayFireAnim();
-	void Fire();
+	// Firing function called on clients
+	virtual void Fire(const FVector& HitTarget);
 
 protected:
 	// Called when the game starts or when spawned
