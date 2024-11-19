@@ -47,6 +47,10 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	if (EquippedWeapon == nullptr) return;
 	if (Character && bFireButtonPressed)
 	{
+		// trace hit result when firing
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->PlayFireAnim(); // local firing anim
 		EquippedWeapon->Fire(HitTarget); // local firing
@@ -111,9 +115,6 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FHitResult HitResult;
-	TraceUnderCrosshairs(HitResult);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
