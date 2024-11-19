@@ -4,7 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-
 #define TRACE_LENGTH 80000
 class ADemoCharacter;
 class AWeapon;
@@ -39,7 +38,7 @@ protected:
 	void OnRep_EquippedWeapon();
 	// Called when fire button pressed
 	void FireButtonPressed(bool bPressed);
-	// RPC, server fires, called by client
+	// RPC, execute on server, called by client
 	UFUNCTION(Server, Reliable)
 	void ServerFire();
 	// Multicast to all clients, called by server

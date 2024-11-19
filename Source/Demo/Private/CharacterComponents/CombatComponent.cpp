@@ -86,10 +86,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		{	// set impact point as end if nothing is hit
 			TraceHitResult.ImpactPoint = End;
 		}
-		else
-		{
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
-		}
+		// else DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
 		HitTarget = TraceHitResult.ImpactPoint; // update HitTarget
 	}
 }

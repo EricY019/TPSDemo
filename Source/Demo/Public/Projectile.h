@@ -9,6 +9,7 @@ class UProjectileMovementComponent;
 class UParticleSystem;
 class UParticleSystemComponent;
 class USoundCue;
+class AProjectileWeapon;
 
 UCLASS()
 class DEMO_API AProjectile : public AActor
@@ -20,6 +21,8 @@ public:
 	AProjectile();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	// Owning Weapon
+	TObjectPtr<AProjectileWeapon> OwningWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,7 +35,7 @@ protected:
 private:
 	// Collision box
 	UPROPERTY(EditAnywhere)
-	UBoxComponent* CollisionBox;
+	TObjectPtr<UBoxComponent> CollisionBox;
 
 	// Movement component
 	UPROPERTY(VisibleAnywhere)
@@ -40,14 +43,6 @@ private:
 
 	// Tracer for projectile
 	UPROPERTY(EditAnywhere)
-	UParticleSystem* Tracer;
-
-	UParticleSystemComponent* TracerComponent;
-
-	// Tracer, sound for hit projectile impacts
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticles;
-
-	UPROPERTY(EditAnywhere)
-	USoundCue* ImpactSound;
+	TObjectPtr<UParticleSystem> Tracer;
+	TObjectPtr<UParticleSystemComponent> TracerComponent;
 };

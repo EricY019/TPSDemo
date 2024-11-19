@@ -119,7 +119,7 @@ private:
 
 	// Anim montage for firing weapon
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAnimMontage* FireWeaponMontage;
+	TObjectPtr<UAnimMontage> FireWeaponMontage;
 	
 public:
 	// OverlappingWeapon, replicated variable

@@ -7,6 +7,8 @@
 class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
+class UParticleSystem;
+class ADemoCharacter;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -41,6 +43,8 @@ public:
 	void PlayFireAnim();
 	// Firing function called on clients
 	virtual void Fire(const FVector& HitTarget);
+	// On hit function for projectiles
+	virtual void OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation);
 
 protected:
 	// Called when the game starts or when spawned
@@ -82,7 +86,7 @@ private:
 	void OnRep_WeaponState();
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	UAnimationAsset* FireAnimation; // play asset/montage on weapons
+	UAnimationAsset* FireAnimation;
 
 public:
 	// WeaponState, replicated variable

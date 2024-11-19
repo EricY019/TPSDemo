@@ -1,9 +1,9 @@
 #include "Projectile.h"
+
+#include "ProjectileWeapon.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Particles/ParticleSystem.h"
-#include "Sound/SoundCue.h"
 
 AProjectile::AProjectile()
 {
@@ -42,20 +42,22 @@ void AProjectile::BeginPlay()
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (ImpactParticles)
-	{	// spawn impact particles at on hit location
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	FTransform Transform = GetActorTransform();
+	FVector Location = GetActorLocation();
+	if (OwningWeapon == nullptr)
+	{	// double check on owner
+		OwningWeapon = Cast<AProjectileWeapon>(GetOwner());
 	}
-	if (ImpactSound)
+	if (OwningWeapon)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		OwningWeapon->OnHit(OtherActor, Transform, Location);
 	}
+	
 	Destroy();
 }
 
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 

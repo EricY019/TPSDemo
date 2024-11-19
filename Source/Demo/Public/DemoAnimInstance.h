@@ -38,7 +38,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped; // has a weapon equipped
 	
-	AWeapon* EquippedWeapon; // character equipped weapon
+	TObjectPtr<AWeapon> EquippedWeapon; // character equipped weapon
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bAiming; // character is aiming
