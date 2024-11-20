@@ -40,14 +40,8 @@ public:
 	bool IsAiming();
 	// Play fire montage if aiming
 	void PlayFireMontage(bool bAiming);
-	// Get AO_Yaw
-	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
-	// Get AO_Pitch
-	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
 	// Get EquippedWeapon
 	AWeapon* GetEquippedWeapon();
-	// Get TurningInPlace
-	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -125,4 +119,10 @@ public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	AWeapon* OverlappingWeapon;
+
+	// Getters
+	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
+	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 };

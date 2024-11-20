@@ -18,11 +18,12 @@ public:
 protected:
 	// BeginPlay override
 	virtual void BeginPlay() override;
-	
-	// RPC, execute on server, called on clients
+	/*
+	 *	Play on hit animation, RPC and multicast
+	 */
 	UFUNCTION(Server, Reliable)
 	void ServerOnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
-	// Multicast to all clients
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastOnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 	

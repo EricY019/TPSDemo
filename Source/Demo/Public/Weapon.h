@@ -36,11 +36,7 @@ public:
 	void ShowPickUpWidget(bool bShowWidget) const;
 	// Set WeaponState
 	void SetWeaponState(EWeaponState State);
-	// Get AreaSphere
-	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
-	// Get WeaponMesh
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
-	// Can fire boolean, for cooldown in child classes
+	// Can fire boolean, for firing animation / cooldown calculation
 	bool bCanFire = true;
 	// Play firing animation, called on server
 	void PlayFireAnim();
@@ -63,6 +59,16 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	UTexture2D* CrosshairsBottom;
+
+	/**
+	 * Zoomed FOV while aiming, modified in every weapon
+	 */
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 45.f;
+
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 30.f;
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -110,4 +116,10 @@ public:
 	// WeaponState, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
+
+	// Getters
+	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const {return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const {return ZoomInterpSpeed; }
 };

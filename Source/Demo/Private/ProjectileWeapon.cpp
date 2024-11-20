@@ -70,9 +70,8 @@ void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& ProjectileTransform,
 
 void AProjectileWeapon::OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation)
 {
-	// PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
-	
-	ServerOnHit_Implementation(OtherActor, ProjectileTransform, ProjectileLocation);
+	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
+	ServerOnHit(OtherActor, ProjectileTransform, ProjectileLocation);
 }
 
 void AProjectileWeapon::ServerOnHit_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
@@ -83,21 +82,8 @@ void AProjectileWeapon::ServerOnHit_Implementation(AActor* OtherActor, const FTr
 void AProjectileWeapon::MulticastOnHit_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
 	ADemoCharacter* OwnerCharacter = Cast<ADemoCharacter>(GetOwner());
-	if (OwnerCharacter)
+	if (OwnerCharacter && !(OwnerCharacter->IsLocallyControlled()))
 	{
-		// Get the local player controller
-		APlayerController* LocalPC = GetWorld()->GetFirstPlayerController();
-		
-		// Check if this character is controlled by the local player controller
-		if (OwnerCharacter->GetController() == LocalPC)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Local player hit"));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Remote player hit"));
-		}
+		PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
 	}
-	
-	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
 }

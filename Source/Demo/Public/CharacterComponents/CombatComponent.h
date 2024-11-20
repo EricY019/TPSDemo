@@ -40,10 +40,12 @@ protected:
 	void OnRep_EquippedWeapon();
 	// Called when fire button pressed
 	void FireButtonPressed(bool bPressed);
-	// RPC, execute on server, called by client
+	/*
+	 * Play firing animation, RPC and multicast
+	 */
 	UFUNCTION(Server, Reliable)
 	void ServerFire();
-	// Multicast to all clients, called by server
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
 	// Build trace given a hit result
@@ -65,6 +67,23 @@ private:
 	 */
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootFactor;
+
+	/*
+	 * Aiming and FOV
+	 */
+	// Field of view when not aiming, set to the camera's base FOV in BeginPlay
+	float DefaultFOV;
+	float CurrentFOV;
+	
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 30.f;
+	
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.f;
+
+	void InterpFOV(float DeltaTime);
 
 public:
 	// Equipped weapon, replicated variable

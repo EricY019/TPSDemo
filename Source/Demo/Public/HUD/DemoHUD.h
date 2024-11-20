@@ -26,8 +26,6 @@ class DEMO_API ADemoHUD : public AHUD
 	
 public:
 	virtual void DrawHUD() override;
-	// Set HUD package
-	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 
 private:
 	FHUDPackage HUDPackage;
@@ -37,4 +35,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
+
+public:
+	// Set HUD package
+	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 };

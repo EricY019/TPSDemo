@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Camera/CameraComponent.h"
 #include "PlayerController/DemoPlayerController.h"
 #include "HUD/DemoHUD.h"
 
@@ -25,13 +26,25 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Init FOV
+	if (Character && Character->GetFollowCamera())
+	{
+		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+		CurrentFOV = DefaultFOV;
+	}
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SetHUDCrosshairs(DeltaTime);
+	// Set on locally controlled character
+	if (Character && Character->IsLocallyControlled())
+	{
+		SetHUDCrosshairs(DeltaTime);
+		InterpFOV(DeltaTime);
+	}
 }
 
 void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
@@ -67,7 +80,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			FVector Velocity = Character->GetVelocity();
 			Velocity.Z = 0.f;
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-			// Spread crosshair when jumping
+
+			// Interpolating crosshair spread shrink
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime,2.25f);
@@ -77,9 +91,40 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime,30.f);
 			}
 			
-			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairInAirFactor;
+			if (bAiming)
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.58f, DeltaTime,30.f);
+			}
+			else
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime,30.f);
+			}
+
+			CrosshairShootFactor = FMath::FInterpTo(CrosshairShootFactor, 0.f, DeltaTime, 40.f);
+			
+			float BaselineSpread = 0.5f;
+			HUDPackage.CrosshairSpread = BaselineSpread +
+				CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor + CrosshairShootFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
+	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr) return;
+
+	if (bAiming)
+	{	// Aim fire interpolate, use weapon controlled zoom FOV and interp speed
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{	// Direct fire interpolate, use default FOV and interp speed
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	if (Character && Character->GetFollowCamera())
+	{	// Set current FOV
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
 
@@ -114,6 +159,12 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		EquippedWeapon->PlayFireAnim(); // local firing anim
 		EquippedWeapon->Fire(HitTarget); // local firing
 		ServerFire();
+
+		// spread crosshair when shooting
+		if (EquippedWeapon)
+		{
+			CrosshairShootFactor = 0.5f;
+		}
 	}
 }
 
