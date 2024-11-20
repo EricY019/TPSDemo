@@ -125,7 +125,3 @@ void AWeapon::PlayFireAnim()
 void AWeapon::Fire(const FVector& HitTarget)
 {
 }
-
-void AWeapon::OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation)
-{
-}

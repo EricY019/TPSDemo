@@ -66,34 +66,34 @@ protected:
 private:
 	// SpringArm for Camera
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"));
-	TObjectPtr<USpringArmComponent> CameraBoom;
+	USpringArmComponent* CameraBoom;
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCameraComponent> FollowCamera;
+	UCameraComponent* FollowCamera;
 	
 	// Input mapping context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputMappingContext> DefaultMapping;
+	UInputMappingContext* DefaultMapping;
 
 	// Enhanced input components: Jump, move, look, equip, aim
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> JumpAction;
+	UInputAction* JumpAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> MoveAction;
+	UInputAction* MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> LookAction;
+	UInputAction* LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> EquipWeaponAction;
+	UInputAction* EquipWeaponAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> AimAction;
+	UInputAction* AimAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> FireAction;
+	UInputAction* FireAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -101,7 +101,7 @@ private:
 	
 	// Combat Component
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCombatComponent> Combat;
+	UCombatComponent* Combat;
 	
 	// RPC, clients call for server to execute
 	UFUNCTION(Server, Reliable)
@@ -119,10 +119,10 @@ private:
 
 	// Anim montage for firing weapon
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	TObjectPtr<UAnimMontage> FireWeaponMontage;
+	UAnimMontage* FireWeaponMontage;
 	
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	TObjectPtr<AWeapon> OverlappingWeapon;
+	AWeapon* OverlappingWeapon;
 };

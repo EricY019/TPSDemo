@@ -7,6 +7,8 @@
 #define TRACE_LENGTH 80000
 class ADemoCharacter;
 class AWeapon;
+class APlayerController;
+class ADemoHUD;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEMO_API UCombatComponent : public UActorComponent
@@ -46,17 +48,28 @@ protected:
 	void MulticastFire();
 	// Build trace given a hit result
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	// Set HUD crosshairs
+	void SetHUDCrosshairs(float DeltaType);
 
 private:
-	TObjectPtr<ADemoCharacter> Character;
+	ADemoCharacter* Character;
+	APlayerController* Controller;
+	ADemoHUD* HUD;
+	
 	bool bFireButtonPressed;
-	// Hit target set every tick
+	
 	FVector HitTarget;
+
+	/**
+	 * HUD and Crosshairs
+	 */
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
 
 public:
 	// Equipped weapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-	TObjectPtr<AWeapon> EquippedWeapon;
+	AWeapon* EquippedWeapon;
 	
 	// isAiming, replicated variable
 	UPROPERTY(Replicated)

@@ -1,0 +1,8 @@
+Demo.sln
+.vsconfig
+.idea/
+.vs/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/

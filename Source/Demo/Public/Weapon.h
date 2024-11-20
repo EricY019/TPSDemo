@@ -8,6 +8,7 @@ class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
 class UParticleSystem;
+class UTexture2D;
 class ADemoCharacter;
 
 UENUM(BlueprintType)
@@ -39,13 +40,30 @@ public:
 	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
 	// Get WeaponMesh
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
+	// Can fire boolean, for cooldown in child classes
+	bool bCanFire = true;
 	// Play firing animation, called on server
 	void PlayFireAnim();
 	// Firing function called on clients
 	virtual void Fire(const FVector& HitTarget);
-	// On hit function for projectiles
-	virtual void OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation);
+	/**
+	 * Textures for weapon crosshairs
+	 */
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsCenter;
 
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsBottom;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -73,13 +91,13 @@ protected:
 private:
 	// Weapon properties
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<USphereComponent> AreaSphere;
+	USphereComponent* AreaSphere;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<UWidgetComponent> PickupWidget;
+	UWidgetComponent* PickupWidget;
 
 	// Called on client when WeaponState is replicated
 	UFUNCTION()

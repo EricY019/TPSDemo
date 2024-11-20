@@ -22,7 +22,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	// Owning Weapon
-	TObjectPtr<AProjectileWeapon> OwningWeapon;
+	AProjectileWeapon* OwningWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,7 +35,7 @@ protected:
 private:
 	// Collision box
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UBoxComponent> CollisionBox;
+	UBoxComponent* CollisionBox;
 
 	// Movement component
 	UPROPERTY(VisibleAnywhere)
@@ -43,6 +43,6 @@ private:
 
 	// Tracer for projectile
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UParticleSystem> Tracer;
-	TObjectPtr<UParticleSystemComponent> TracerComponent;
+	UParticleSystem* Tracer;
+	UParticleSystemComponent* TracerComponent;
 };

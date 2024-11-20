@@ -21,7 +21,7 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<ADemoCharacter> DemoCharacter; // character AnimInstance controls
+	ADemoCharacter* DemoCharacter; // character AnimInstance controls
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float VelocityZ; // character Z-axis velocity
@@ -38,7 +38,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped; // has a weapon equipped
 	
-	TObjectPtr<AWeapon> EquippedWeapon; // character equipped weapon
+	AWeapon* EquippedWeapon; // character equipped weapon
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bAiming; // character is aiming
