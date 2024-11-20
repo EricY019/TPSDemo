@@ -4,10 +4,11 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-
 #define TRACE_LENGTH 80000
 class ADemoCharacter;
 class AWeapon;
+class APlayerController;
+class ADemoHUD;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEMO_API UCombatComponent : public UActorComponent
@@ -39,25 +40,55 @@ protected:
 	void OnRep_EquippedWeapon();
 	// Called when fire button pressed
 	void FireButtonPressed(bool bPressed);
-	// RPC, server fires, called by client
+	/*
+	 * Play firing animation, RPC and multicast
+	 */
 	UFUNCTION(Server, Reliable)
 	void ServerFire();
-	// Multicast to all clients, called by server
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
 	// Build trace given a hit result
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	// Set HUD crosshairs
+	void SetHUDCrosshairs(float DeltaType);
 
 private:
-	TObjectPtr<ADemoCharacter> Character;
+	ADemoCharacter* Character;
+	APlayerController* Controller;
+	ADemoHUD* HUD;
+	
 	bool bFireButtonPressed;
-	// Hit target set every tick
+	
 	FVector HitTarget;
+
+	/**
+	 * HUD and Crosshairs
+	 */
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootFactor;
+
+	/*
+	 * Aiming and FOV
+	 */
+	// Field of view when not aiming, set to the camera's base FOV in BeginPlay
+	float DefaultFOV;
+	float CurrentFOV;
+	
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 30.f;
+	
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.f;
+
+	void InterpFOV(float DeltaTime);
 
 public:
 	// Equipped weapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-	TObjectPtr<AWeapon> EquippedWeapon;
+	AWeapon* EquippedWeapon;
 	
 	// isAiming, replicated variable
 	UPROPERTY(Replicated)

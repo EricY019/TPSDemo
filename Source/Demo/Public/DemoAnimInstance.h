@@ -21,7 +21,7 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<ADemoCharacter> DemoCharacter; // character AnimInstance controls
+	ADemoCharacter* DemoCharacter; // character AnimInstance controls
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float VelocityZ; // character Z-axis velocity

@@ -40,14 +40,8 @@ public:
 	bool IsAiming();
 	// Play fire montage if aiming
 	void PlayFireMontage(bool bAiming);
-	// Get AO_Yaw
-	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
-	// Get AO_Pitch
-	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
 	// Get EquippedWeapon
 	AWeapon* GetEquippedWeapon();
-	// Get TurningInPlace
-	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -66,34 +60,34 @@ protected:
 private:
 	// SpringArm for Camera
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"));
-	TObjectPtr<USpringArmComponent> CameraBoom;
+	USpringArmComponent* CameraBoom;
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCameraComponent> FollowCamera;
+	UCameraComponent* FollowCamera;
 	
 	// Input mapping context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputMappingContext> DefaultMapping;
+	UInputMappingContext* DefaultMapping;
 
 	// Enhanced input components: Jump, move, look, equip, aim
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> JumpAction;
+	UInputAction* JumpAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> MoveAction;
+	UInputAction* MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> LookAction;
+	UInputAction* LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> EquipWeaponAction;
+	UInputAction* EquipWeaponAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> AimAction;
+	UInputAction* AimAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> FireAction;
+	UInputAction* FireAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -101,7 +95,7 @@ private:
 	
 	// Combat Component
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCombatComponent> Combat;
+	UCombatComponent* Combat;
 	
 	// RPC, clients call for server to execute
 	UFUNCTION(Server, Reliable)
@@ -124,5 +118,11 @@ private:
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-	TObjectPtr<AWeapon> OverlappingWeapon;
+	AWeapon* OverlappingWeapon;
+
+	// Getters
+	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
+	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 };

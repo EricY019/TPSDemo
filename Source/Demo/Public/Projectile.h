@@ -9,6 +9,7 @@ class UProjectileMovementComponent;
 class UParticleSystem;
 class UParticleSystemComponent;
 class USoundCue;
+class AProjectileWeapon;
 
 UCLASS()
 class DEMO_API AProjectile : public AActor
@@ -20,6 +21,8 @@ public:
 	AProjectile();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	// Owning Weapon
+	AProjectileWeapon* OwningWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,13 +44,5 @@ private:
 	// Tracer for projectile
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* Tracer;
-
 	UParticleSystemComponent* TracerComponent;
-
-	// Tracer, sound for hit projectile impacts
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticles;
-
-	UPROPERTY(EditAnywhere)
-	USoundCue* ImpactSound;
 };

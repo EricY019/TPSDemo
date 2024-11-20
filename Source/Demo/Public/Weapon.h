@@ -7,6 +7,9 @@
 class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
+class UParticleSystem;
+class UTexture2D;
+class ADemoCharacter;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -33,15 +36,40 @@ public:
 	void ShowPickUpWidget(bool bShowWidget) const;
 	// Set WeaponState
 	void SetWeaponState(EWeaponState State);
-	// Get AreaSphere
-	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
-	// Get WeaponMesh
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
+	// Can fire boolean, for firing animation / cooldown calculation
+	bool bCanFire = true;
 	// Play firing animation, called on server
 	void PlayFireAnim();
 	// Firing function called on clients
 	virtual void Fire(const FVector& HitTarget);
+	/**
+	 * Textures for weapon crosshairs
+	 */
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsCenter;
 
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsBottom;
+
+	/**
+	 * Zoomed FOV while aiming, modified in every weapon
+	 */
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 45.f;
+
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 30.f;
+	
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -69,23 +97,29 @@ protected:
 private:
 	// Weapon properties
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<USphereComponent> AreaSphere;
+	USphereComponent* AreaSphere;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	TObjectPtr<UWidgetComponent> PickupWidget;
+	UWidgetComponent* PickupWidget;
 
 	// Called on client when WeaponState is replicated
 	UFUNCTION()
 	void OnRep_WeaponState();
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	UAnimationAsset* FireAnimation; // play asset/montage on weapons
+	UAnimationAsset* FireAnimation;
 
 public:
 	// WeaponState, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
+
+	// Getters
+	FORCEINLINE TObjectPtr<USphereComponent> GetAreaSphere() const {return AreaSphere; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const {return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const {return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const {return ZoomInterpSpeed; }
 };

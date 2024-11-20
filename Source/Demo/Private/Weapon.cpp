@@ -11,7 +11,7 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true; // register replicates
 
-	// Create WeaponMesh object, set WeaponMesh as rootcomponent
+	// Create WeaponMesh object, set WeaponMesh as root component
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);
 	// Init WeaponMesh as no collision
