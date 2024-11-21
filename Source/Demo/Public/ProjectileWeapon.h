@@ -13,7 +13,7 @@ class DEMO_API AProjectileWeapon : public AWeapon
 	
 public:
 	virtual void Fire(const FVector& HitTarget) override;
-	void OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation);
+	void OnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 
 protected:
 	// BeginPlay override

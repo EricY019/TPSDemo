@@ -64,7 +64,7 @@ public:
 	 * Zoomed FOV while aiming, modified in every weapon
 	 */
 	UPROPERTY(EditAnywhere)
-	float ZoomedFOV = 45.f;
+	float ZoomedFOV = 50.f;
 
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 30.f;

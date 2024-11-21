@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "HUD/DemoHUD.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000
@@ -59,9 +60,6 @@ private:
 	ADemoHUD* HUD;
 	
 	bool bFireButtonPressed;
-	
-	FVector HitTarget;
-
 	/**
 	 * HUD and Crosshairs
 	 */
@@ -69,6 +67,9 @@ private:
 	float CrosshairInAirFactor;
 	float CrosshairAimFactor;
 	float CrosshairShootFactor;
+	
+	FVector HitTarget;
+	FHUDPackage HUDPackage;
 
 	/*
 	 * Aiming and FOV

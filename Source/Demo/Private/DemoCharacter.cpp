@@ -11,6 +11,7 @@
 #include "CharacterComponents/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "DemoAnimInstance.h"
+#include "Demo/Demo.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -20,6 +21,7 @@ ADemoCharacter::ADemoCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationPitch = false;
+	
 	// Character movement config
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // rotation rate
@@ -29,6 +31,11 @@ ADemoCharacter::ADemoCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	// Mesh collision config, visibility block for line traces
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // set collision type as SkeletalMesh
+	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	
 	// Create SpringArm for camera, attach to character mesh
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
@@ -138,6 +145,19 @@ void ADemoCharacter::PlayFireMontage(bool bAiming)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName = bAiming ? FName("RifleAim") : FName("RifleHip"); // select section by if aiming
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ADemoCharacter::PlayHitReactMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }

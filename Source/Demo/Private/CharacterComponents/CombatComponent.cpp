@@ -8,7 +8,6 @@
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "PlayerController/DemoPlayerController.h"
-#include "HUD/DemoHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -42,6 +41,9 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// Set on locally controlled character
 	if (Character && Character->IsLocallyControlled())
 	{
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		
 		SetHUDCrosshairs(DeltaTime);
 		InterpFOV(DeltaTime);
 	}
@@ -57,7 +59,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = HUD == nullptr ? Cast<ADemoHUD>(Controller->GetHUD()) : HUD;
 		if (HUD)
 		{
-			FHUDPackage HUDPackage;
+			
 			if (EquippedWeapon)
 			{	// Set HUD only when equipped
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
@@ -151,9 +153,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	
 	if (Character && bFireButtonPressed)
 	{
-		// trace hit result when fire button pressed
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
+		
 		
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->PlayFireAnim(); // local firing anim
@@ -163,7 +163,7 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 		// spread crosshair when shooting
 		if (EquippedWeapon)
 		{
-			CrosshairShootFactor = 0.5f;
+			CrosshairShootFactor = 0.75f;
 		}
 	}
 }
@@ -185,13 +185,30 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		CrosshairWorldPosition,
 		CrosshairWorldDirection
 	);
-	// build line trace
+	
 	if (bScreenToWorld)
-	{
+	{	// build line trace
 		FVector Start = CrosshairWorldPosition;
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
+		// push trace start location forward 60.f - avoid tracing to self or behind
+		if (Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation()-Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 60.f);
+		}
+		
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
+		{	// draw crosshairs red if line traces an actor
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+		}
+		else
+		{	// else white
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
+		
 		if (!TraceHitResult.bBlockingHit)
 		{	// set impact point as end if nothing is hit
 			TraceHitResult.ImpactPoint = End;

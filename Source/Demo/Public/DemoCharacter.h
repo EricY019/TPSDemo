@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Demo/Public/CharacterTypes/TurningInPlace.h"
+#include "Demo/Public/Interfaces/InteractWithCrosshairsInterface.h"
 #include "DemoCharacter.generated.h"
 
 class USpringArmComponent;
@@ -17,7 +18,7 @@ class UAnimMontage;
 struct FInputActionValue;
 
 UCLASS()
-class DEMO_API ADemoCharacter : public ACharacter
+class DEMO_API ADemoCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
@@ -38,10 +39,12 @@ public:
 	bool IsWeaponEquipped();
 	// Determines if this character is aiming
 	bool IsAiming();
-	// Play fire montage if aiming
-	void PlayFireMontage(bool bAiming);
 	// Get EquippedWeapon
 	AWeapon* GetEquippedWeapon();
+	// Play fire montage if aiming
+	void PlayFireMontage(bool bAiming);
+	// Play on hit montage
+	void PlayHitReactMontage();
 	
 protected:
 	// Called when the game starts or when spawned
@@ -114,6 +117,11 @@ private:
 	// Anim montage for firing weapon
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
+
+	// Anim montage for hit react
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+	
 	
 public:
 	// OverlappingWeapon, replicated variable

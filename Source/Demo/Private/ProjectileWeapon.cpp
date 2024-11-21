@@ -68,9 +68,15 @@ void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& ProjectileTransform,
 	}
 }
 
-void AProjectileWeapon::OnHit(AActor* OtherActor, FTransform ProjectileTransform, FVector ProjectileLocation)
+void AProjectileWeapon::OnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
+	// play fire on hit animation, play character hit react
 	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
+	if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
+	{
+		DemoCharacter->PlayHitReactMontage();
+	}
+	
 	ServerOnHit(OtherActor, ProjectileTransform, ProjectileLocation);
 }
 
@@ -85,5 +91,9 @@ void AProjectileWeapon::MulticastOnHit_Implementation(AActor* OtherActor, const 
 	if (OwnerCharacter && !(OwnerCharacter->IsLocallyControlled()))
 	{
 		PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
+		if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
+		{
+			DemoCharacter->PlayHitReactMontage();
+		}
 	}
 }
