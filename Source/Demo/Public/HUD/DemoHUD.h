@@ -5,6 +5,8 @@
 #include "DemoHUD.generated.h"
 
 class UTexture2D;
+class UCharacterOverlay;
+class UUserWidget;
 
 USTRUCT(BlueprintType)
 struct FHUDPackage
@@ -20,6 +22,9 @@ public:
 	FLinearColor CrosshairsColor = FLinearColor::White; // white on default
 };
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API ADemoHUD : public AHUD
 {
@@ -27,6 +32,15 @@ class DEMO_API ADemoHUD : public AHUD
 	
 public:
 	virtual void DrawHUD() override;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<UUserWidget> CharacterOverlayClass;
+	
+	UCharacterOverlay* CharacterOverlay;
+
+protected:
+	virtual void BeginPlay() override;
+	void AddCharacterOverlay();
 
 private:
 	FHUDPackage HUDPackage;

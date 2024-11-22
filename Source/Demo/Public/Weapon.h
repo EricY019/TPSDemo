@@ -20,6 +20,9 @@ enum class EWeaponState : uint8
 	Ews_Max UMETA(DisplayName = "DefaultMAX")
 };
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API AWeapon : public AActor
 {

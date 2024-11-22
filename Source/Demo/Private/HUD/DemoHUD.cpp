@@ -1,4 +1,23 @@
 #include "HUD/DemoHUD.h"
+#include "GameFramework/PlayerController.h"
+#include "HUD/CharacterOverlay.h"
+
+void ADemoHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AddCharacterOverlay();
+}
+
+void ADemoHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}
+}
 
 void ADemoHUD::DrawHUD()
 {

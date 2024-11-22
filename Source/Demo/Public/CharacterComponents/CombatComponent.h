@@ -11,6 +11,9 @@ class AWeapon;
 class APlayerController;
 class ADemoHUD;
 
+/**
+ * 
+ */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEMO_API UCombatComponent : public UActorComponent
 {

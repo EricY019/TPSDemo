@@ -63,20 +63,45 @@ void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly); // Replicate OverlappingWeapon to owner proxies
+	DOREPLIFETIME(ADemoCharacter, Health);
+}
+
+void ADemoCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+
+	if (GetLocalRole() == ROLE_SimulatedProxy)
+	{	// Call on movement replication
+		SimProxiesTurn();
+	}
+	TimeSinceLastMovementReplication = 0.f;
 }
 
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Aiming offset config
+	// Aiming offset bug fix, init val
 	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 }
 
 void ADemoCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	AimOffset(DeltaTime);
+	
+	if (GetLocalRole() > ROLE_SimulatedProxy && IsLocallyControlled())
+	{	// Obtain aiming offset for locally controlled player
+		AimOffset(DeltaTime);
+	}
+	else
+	{	// Replicate movement for simulated proxies
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
 }
 
 void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -245,18 +270,24 @@ void ADemoCharacter::FireButtonReleased()
 	}
 }
 
+float ADemoCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	return Velocity.Size();
+}
+
 void ADemoCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr) return;
 	
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0.f;
-	float Speed = Velocity.Size();
+	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 	
 	// Set aiming offset yaw
 	if (Speed == 0.f && !bIsInAir) // standing still
 	{
+		bRotateRootBone = true; // rotate root bone only when standing
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
@@ -267,15 +298,20 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 		bUseControllerRotationYaw = true;
 		TurnInPlace(DeltaTime); // turn in place only when standing still
 	}
-	else if (Speed > 0.f || bIsInAir) // running / jumping
+	else if (Speed > 0.f || bIsInAir) // running, jumping
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning; // not turning if running / jumping
 	}
 	
-	// Set aiming offset pitch
+	CalculateAO_Pitch();
+}
+
+void ADemoCharacter::CalculateAO_Pitch()
+{
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	// Pitch is bounded in [0, 360), [-90, 0) pitch is rounded to [270, 360) on server side
 	if (AO_Pitch > 90.f && !IsLocallyControlled())
@@ -283,6 +319,40 @@ void ADemoCharacter::AimOffset(float DeltaTime)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ADemoCharacter::SimProxiesTurn()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	bRotateRootBone = false;
+	float Speed = CalculateSpeed();
+	if (Speed > 0.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	
+	// Play turning animation when rotate > turning threshold
+	ProxyRotationLastFrame = ProxyRotation;
+	ProxyRotation = GetActorRotation();
+	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+
+	if (FMath::Abs(ProxyYaw) > TurnThreshold)
+	{
+		if (ProxyYaw > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYaw < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+	}
+	else
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 }
 
@@ -307,6 +377,11 @@ void ADemoCharacter::TurnInPlace(float DeltaTime)
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
 	}
+}
+
+void ADemoCharacter::OnRep_Health()
+{
+	
 }
 
 void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)

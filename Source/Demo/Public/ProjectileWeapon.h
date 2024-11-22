@@ -6,6 +6,9 @@
 
 class AProjectile;
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API AProjectileWeapon : public AWeapon
 {
@@ -44,7 +47,7 @@ private:
 
 	// Cooldown
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	float RateOfFire = 2.0f;
+	float RateOfFire = 3.0f;
 	float FireCooldown = 0.0f;
 	FTimerHandle FireRateTimerHandle;
 	// reset cooldown

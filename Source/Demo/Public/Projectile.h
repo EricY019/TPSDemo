@@ -11,6 +11,9 @@ class UParticleSystemComponent;
 class USoundCue;
 class AProjectileWeapon;
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API AProjectile : public AActor
 {

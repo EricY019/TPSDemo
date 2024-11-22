@@ -32,6 +32,7 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EquippedWeapon = DemoCharacter->GetEquippedWeapon();
 	bAiming = DemoCharacter->IsAiming();
 	TurningInPlace = DemoCharacter->GetTurningInPlace();
+	bRotateRootBone = DemoCharacter->ShouldRoatateRootBone();
 	// Update character yaw
 	FRotator AimRotation = DemoCharacter->GetBaseAimRotation();
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(Velocity);

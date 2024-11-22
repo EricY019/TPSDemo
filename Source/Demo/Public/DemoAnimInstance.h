@@ -8,6 +8,9 @@
 class ADemoCharacter;
 class AWeapon;
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API UDemoAnimInstance : public UAnimInstance
 {
@@ -59,4 +62,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	ETurningInPlace TurningInPlace; // turning in place
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bRotateRootBone; // rotate root bone
 };

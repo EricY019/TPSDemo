@@ -17,6 +17,9 @@ class UCombatComponent;
 class UAnimMontage;
 struct FInputActionValue;
 
+/**
+ * 
+ */
 UCLASS()
 class DEMO_API ADemoCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -45,6 +48,8 @@ public:
 	void PlayFireMontage(bool bAiming);
 	// Play on hit montage
 	void PlayHitReactMontage();
+	// Override OnRep_ReplicatedMovement
+	virtual void OnRep_ReplicatedMovement() override;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -59,6 +64,10 @@ protected:
 	void FireButtonReleased();
 	// Obtain aiming offset, called per frame
 	void AimOffset(float DeltaTime);
+	// Calculate AO_Pitch
+	void CalculateAO_Pitch();
+	// Handle turning for simulated proxies
+	void SimProxiesTurn();
 
 private:
 	// SpringArm for Camera
@@ -121,16 +130,38 @@ private:
 	// Anim montage for hit react
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* HitReactMontage;
-	
+
+	// Rotation for simulated proxy
+	bool bRotateRootBone;
+	float TurnThreshold = 0.5f; // threshold
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TimeSinceLastMovementReplication;
+	float CalculateSpeed();
+
+	/*
+	 * Player health
+	 */
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UFUNCTION()
+	void OnRep_Health();
 	
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	AWeapon* OverlappingWeapon;
 
+	// Player health, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 100.f;
+
 	// Getters
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
 	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
+	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
 };
