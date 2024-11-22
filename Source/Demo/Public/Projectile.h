@@ -48,4 +48,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* Tracer;
 	UParticleSystemComponent* TracerComponent;
+
+	// Damage
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
 };

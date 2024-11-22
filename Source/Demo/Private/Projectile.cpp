@@ -4,6 +4,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Demo/Demo.h"
+#include "GameFramework/Character.h"
 
 AProjectile::AProjectile()
 {
@@ -29,7 +30,7 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	if (Tracer)
-	{	// spawn tracer component attached to projectile
+	{	// Spawn tracer component attached to projectile
 		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
 			Tracer,
 			CollisionBox,
@@ -44,16 +45,18 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
-{
+{	// Called on clients, which spawns projectile
+
+	// RPC, then multicast on hit animation on weapon class
 	FTransform Transform = GetActorTransform();
 	FVector Location = GetActorLocation();
 	if (OwningWeapon == nullptr)
-	{	// double check on owner
+	{
 		OwningWeapon = Cast<AProjectileWeapon>(GetOwner());
 	}
 	if (OwningWeapon)
 	{
-		OwningWeapon->OnHit(OtherActor, Transform, Location);
+		OwningWeapon->OnHitEvent(OtherActor, OwningWeapon, Damage, Transform, Location);
 	}
 	
 	Destroy();

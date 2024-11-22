@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "DemoAnimInstance.h"
 #include "Demo/Demo.h"
+#include "PlayerController/DemoPlayerController.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -81,8 +82,13 @@ void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Aiming offset bug fix, init val
-	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // Aiming offset bug fix, init value
+	UpdateHUDHealth();
+	// Receive damage on server
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ADemoCharacter::ReceiveDamage);
+	}
 }
 
 void ADemoCharacter::Tick(float DeltaTime)
@@ -356,6 +362,11 @@ void ADemoCharacter::SimProxiesTurn()
 	}
 }
 
+void ADemoCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+}
+
 void ADemoCharacter::TurnInPlace(float DeltaTime)
 {
 	if (AO_Yaw > 90.f)
@@ -381,7 +392,18 @@ void ADemoCharacter::TurnInPlace(float DeltaTime)
 
 void ADemoCharacter::OnRep_Health()
 {
-	
+	// Called on clients, update HUD health, play hit react montage
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ADemoCharacter::UpdateHUDHealth()
+{
+	DemoPlayerController = DemoPlayerController == nullptr ? Cast<ADemoPlayerController>(Controller) : DemoPlayerController;
+	if (DemoPlayerController)
+	{
+		DemoPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)

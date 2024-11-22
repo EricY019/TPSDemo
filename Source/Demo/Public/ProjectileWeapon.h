@@ -16,7 +16,7 @@ class DEMO_API AProjectileWeapon : public AWeapon
 	
 public:
 	virtual void Fire(const FVector& HitTarget) override;
-	void OnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void OnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 
 protected:
 	// BeginPlay override
@@ -25,10 +25,10 @@ protected:
 	 *	Play on hit animation, RPC and multicast
 	 */
 	UFUNCTION(Server, Reliable)
-	void ServerOnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void ServerOnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastOnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void MulticastOnHitEvent(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 	
 private:
 	// Projectile subclass, spawn from projectile weapon

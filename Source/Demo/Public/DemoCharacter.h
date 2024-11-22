@@ -15,6 +15,8 @@ class UInputAction;
 class AWeapon;
 class UCombatComponent;
 class UAnimMontage;
+class ADemoPlayerController;
+class AController;
 struct FInputActionValue;
 
 /**
@@ -68,7 +70,12 @@ protected:
 	void CalculateAO_Pitch();
 	// Handle turning for simulated proxies
 	void SimProxiesTurn();
-
+	// Callback to damage event
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser);
+	// Update HUD health
+	void UpdateHUDHealth();
+	
 private:
 	// SpringArm for Camera
 	UPROPERTY(VisibleAnywhere, Category = "Camera", meta = (AllowPrivateAccess = "true"));
@@ -148,7 +155,9 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health();
-	
+
+	ADemoPlayerController* DemoPlayerController;
+
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)

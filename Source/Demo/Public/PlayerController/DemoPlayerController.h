@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "DemoPlayerController.generated.h"
 
+class ADemoHUD;
+
 /**
  * 
  */
@@ -11,5 +13,14 @@ UCLASS()
 class DEMO_API ADemoPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+	
+public:
+	void SetHUDHealth(float Health, float MaxHealth);
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	ADemoHUD* DemoHUD;
 	
 };

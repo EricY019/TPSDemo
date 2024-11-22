@@ -1,5 +1,4 @@
 #include "ProjectileWeapon.h"
-
 #include "DemoCharacter.h"
 #include "Projectile.h"
 #include "Engine/SkeletalMeshSocket.h"
@@ -68,7 +67,7 @@ void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& ProjectileTransform,
 	}
 }
 
-void AProjectileWeapon::OnHit(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::OnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
 	// play fire on hit animation, play character hit react
 	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
@@ -77,23 +76,29 @@ void AProjectileWeapon::OnHit(AActor* OtherActor, const FTransform& ProjectileTr
 		DemoCharacter->PlayHitReactMontage();
 	}
 	
-	ServerOnHit(OtherActor, ProjectileTransform, ProjectileLocation);
+	ServerOnHitEvent(OtherActor, CausingWeapon, Damage, ProjectileTransform, ProjectileLocation);
 }
 
-void AProjectileWeapon::ServerOnHit_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::ServerOnHitEvent_Implementation(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
-	MulticastOnHit(OtherActor, ProjectileTransform, ProjectileLocation);
+	// Apply damage authoritatively on server, damage replicated to clients with anim montage
+	if (ACharacter* InstigatorCharacter = Cast<ACharacter>(CausingWeapon->GetOwner()))
+	{
+		if (AController* InstigatorController = InstigatorCharacter->GetController())
+		{
+			UGameplayStatics::ApplyDamage(OtherActor, Damage, InstigatorController, CausingWeapon, UDamageType::StaticClass());
+		}
+	}
+
+	// multicast to other clients - firing on hit explosion
+	MulticastOnHitEvent(OtherActor, ProjectileTransform, ProjectileLocation);
 }
 
-void AProjectileWeapon::MulticastOnHit_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::MulticastOnHitEvent_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
 	ADemoCharacter* OwnerCharacter = Cast<ADemoCharacter>(GetOwner());
 	if (OwnerCharacter && !(OwnerCharacter->IsLocallyControlled()))
 	{
 		PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
-		if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
-		{
-			DemoCharacter->PlayHitReactMontage();
-		}
 	}
 }
