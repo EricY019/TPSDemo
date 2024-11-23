@@ -48,10 +48,16 @@ public:
 	AWeapon* GetEquippedWeapon();
 	// Play fire montage if aiming
 	void PlayFireMontage(bool bAiming);
+	// Play elimation montage
+	void PlayElimMontage();
 	// Play on hit montage
 	void PlayHitReactMontage();
 	// Override OnRep_ReplicatedMovement
 	virtual void OnRep_ReplicatedMovement() override;
+	
+	// Multicast, when player is eliminated
+	UFUNCTION(NetMulticast, Reliable)
+	void Elim();
 	
 protected:
 	// Called when the game starts or when spawned
@@ -130,13 +136,17 @@ private:
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
 
-	// Anim montage for firing weapon
+	/*
+	 * Animation montages
+	 */
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
-
-	// Anim montage for hit react
+	
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ElimMontage;
 
 	// Rotation for simulated proxy
 	bool bRotateRootBone;
@@ -157,6 +167,8 @@ private:
 	void OnRep_Health();
 
 	ADemoPlayerController* DemoPlayerController;
+	
+	bool bElimmed = false;
 
 public:
 	// OverlappingWeapon, replicated variable
@@ -173,4 +185,5 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return TurningInPlace; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
+	FORCEINLINE bool IsElimmed() const {return bElimmed; }
 };

@@ -65,4 +65,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bRotateRootBone; // rotate root bone
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	bool bElimmed; // is elimintaed
 };

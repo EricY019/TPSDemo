@@ -1,8 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Demo/Public/DemoGameMode.h"
 #include "UObject/ConstructorHelpers.h"
+#include "DemoCharacter.h"
+#include "PlayerController/DemoPlayerController.h"
 
 ADemoGameMode::ADemoGameMode()
 {
@@ -11,5 +10,13 @@ ADemoGameMode::ADemoGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+}
+
+void ADemoGameMode::PlayerEliminated(ADemoCharacter* ElimmedCharacter, ADemoPlayerController* VictimController, ADemoPlayerController* AttackerController)
+{
+	if (ElimmedCharacter)
+	{
+		ElimmedCharacter->Elim();
 	}
 }

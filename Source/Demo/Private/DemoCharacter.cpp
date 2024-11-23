@@ -13,6 +13,7 @@
 #include "DemoAnimInstance.h"
 #include "Demo/Demo.h"
 #include "PlayerController/DemoPlayerController.h"
+#include "DemoGameMode.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -78,15 +79,20 @@ void ADemoCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
+void ADemoCharacter::Elim_Implementation()
+{	// Called on each client
+	bElimmed = true;
+	PlayElimMontage();
+}
+
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // Aiming offset bug fix, init value
 	UpdateHUDHealth();
-	// Receive damage on server
 	if (HasAuthority())
-	{
+	{	// Receive damage on server for victim character
 		OnTakeAnyDamage.AddDynamic(this, &ADemoCharacter::ReceiveDamage);
 	}
 }
@@ -177,6 +183,15 @@ void ADemoCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_Play(FireWeaponMontage);
 		FName SectionName = bAiming ? FName("RifleAim") : FName("RifleHip"); // select section by if aiming
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ADemoCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
 	}
 }
 
@@ -363,8 +378,21 @@ void ADemoCharacter::SimProxiesTurn()
 }
 
 void ADemoCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
-{
+{	// Receive damage on server, then replicate to clients
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+	
+	// Eliminate player when health reaches 0
+	if (Health == 0.f)
+	{
+		if (ADemoGameMode* DemoGameMode = GetWorld()->GetAuthGameMode<ADemoGameMode>())
+		{
+			DemoPlayerController = DemoPlayerController == nullptr ? Cast<ADemoPlayerController>(Controller) : DemoPlayerController;
+			ADemoPlayerController* AttackerController = Cast<ADemoPlayerController>(InstigatorController);
+			DemoGameMode->PlayerEliminated(this, DemoPlayerController, AttackerController);
+		}
+	}
 }
 
 void ADemoCharacter::TurnInPlace(float DeltaTime)
