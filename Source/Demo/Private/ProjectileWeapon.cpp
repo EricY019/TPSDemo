@@ -69,13 +69,8 @@ void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& ProjectileTransform,
 
 void AProjectileWeapon::OnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
 {
-	// play fire on hit animation, play character hit react
+	// projectile on hit animation
 	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
-	if (ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor))
-	{
-		DemoCharacter->PlayHitReactMontage();
-	}
-	
 	ServerOnHitEvent(OtherActor, CausingWeapon, Damage, ProjectileTransform, ProjectileLocation);
 }
 
@@ -90,12 +85,12 @@ void AProjectileWeapon::ServerOnHitEvent_Implementation(AActor* OtherActor, AWea
 		}
 	}
 
-	// multicast to other clients - firing on hit explosion
-	MulticastOnHitEvent(OtherActor, ProjectileTransform, ProjectileLocation);
+	// multicast to other clients
+	MulticastOnHitEvent(ProjectileTransform, ProjectileLocation);
 }
 
-void AProjectileWeapon::MulticastOnHitEvent_Implementation(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
-{
+void AProjectileWeapon::MulticastOnHitEvent_Implementation(const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+{	// projectile on hit animation
 	ADemoCharacter* OwnerCharacter = Cast<ADemoCharacter>(GetOwner());
 	if (OwnerCharacter && !(OwnerCharacter->IsLocallyControlled()))
 	{

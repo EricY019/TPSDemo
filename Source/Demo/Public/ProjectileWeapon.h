@@ -28,7 +28,7 @@ protected:
 	void ServerOnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastOnHitEvent(AActor* OtherActor, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void MulticastOnHitEvent(const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
 	
 private:
 	// Projectile subclass, spawn from projectile weapon

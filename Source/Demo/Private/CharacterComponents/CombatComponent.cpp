@@ -153,8 +153,6 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	
 	if (Character && bFireButtonPressed)
 	{
-		
-		
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->PlayFireAnim(); // local firing anim
 		EquippedWeapon->Fire(HitTarget); // local firing

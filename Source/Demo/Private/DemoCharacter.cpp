@@ -80,9 +80,9 @@ void ADemoCharacter::OnRep_ReplicatedMovement()
 }
 
 void ADemoCharacter::Elim_Implementation()
-{	// Called on each client
+{	// Called on clients
 	bElimmed = true;
-	PlayElimMontage();
+	PlayElimMontage(); // Play eliminated animation
 }
 
 void ADemoCharacter::BeginPlay()
@@ -419,10 +419,13 @@ void ADemoCharacter::TurnInPlace(float DeltaTime)
 }
 
 void ADemoCharacter::OnRep_Health()
-{
-	// Called on clients, update HUD health, play hit react montage
+{	// Called on clients, play hit react montage if not eliminated (in case elim multicast arrives earlier)
+	if (bElimmed == false)
+	{
+		PlayHitReactMontage();
+	}
+	// Update HUD health
 	UpdateHUDHealth();
-	PlayHitReactMontage();
 }
 
 void ADemoCharacter::UpdateHUDHealth()
