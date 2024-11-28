@@ -66,6 +66,7 @@ void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly); // Replicate OverlappingWeapon to owner proxies
 	DOREPLIFETIME(ADemoCharacter, Health);
+	DOREPLIFETIME(ADemoCharacter, PositionHistory);
 }
 
 void ADemoCharacter::OnRep_ReplicatedMovement()
@@ -79,10 +80,52 @@ void ADemoCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
+void ADemoCharacter::ServerUpdatePosition_Implementation(const FVector& NewPosition, float TimeStamp)
+{
+	if (HasAuthority())
+	{
+		// Add current position to history
+		PositionHistory.Add(FPositionHistoryEntry(NewPosition, TimeStamp));
+
+		// Remove old entries beyond
+		float CurrentTime = GetWorld()->GetTimeSeconds();
+		while (PositionHistory.Num() > 0 && (CurrentTime - PositionHistory.Last().Time) > MaxHistoryDuration)
+		{
+			PositionHistory.RemoveAt(0);
+		}
+	}
+}
+
 void ADemoCharacter::Elim_Implementation()
 {	// Called on clients
 	bElimmed = true;
 	PlayElimMontage(); // Play eliminated animation
+}
+
+FVector ADemoCharacter::GetPositionAtTime(float ServerTime) const
+{
+	// Find the two entries between which ServerTime falls
+	if (PositionHistory.Num() == 0)
+	{
+		return FVector::ZeroVector;
+	}
+	
+	if (ServerTime <= PositionHistory[0].Time)
+	{
+		return PositionHistory[0].Position;
+	}
+
+	for (int32 i = 0; i < PositionHistory.Num() - 1; i++)
+	{
+		if (ServerTime >= PositionHistory[i].Time && ServerTime < PositionHistory[i + 1].Time)
+		{
+			// Linear Interpolation between PositionHistory[i] and PositionHistory[i+1]
+			float Alpha = (ServerTime - PositionHistory[i].Time) / (PositionHistory[i + 1].Time - PositionHistory[i].Time);
+			return FMath::Lerp(PositionHistory[i].Position, PositionHistory[i + 1].Position, Alpha);
+		}
+	}
+	// Return last position if servertime is after last recorded time
+	return PositionHistory.Last().Position;
 }
 
 void ADemoCharacter::BeginPlay()
@@ -113,6 +156,13 @@ void ADemoCharacter::Tick(float DeltaTime)
 			OnRep_ReplicatedMovement();
 		}
 		CalculateAO_Pitch();
+	}
+
+	if (!HasAuthority() && GetNetConnection() != nullptr)
+	{	// Update position to server on clients
+		FVector CurrentPosition = GetActorLocation();
+		float CurrentTime = GetWorld()->GetTimeSeconds();
+		ServerUpdatePosition(CurrentPosition, CurrentTime);
 	}
 }
 

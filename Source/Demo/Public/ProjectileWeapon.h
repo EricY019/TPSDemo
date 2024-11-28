@@ -16,7 +16,8 @@ class DEMO_API AProjectileWeapon : public AWeapon
 	
 public:
 	virtual void Fire(const FVector& HitTarget) override;
-	void OnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void OnHitEvent(AActor* OtherActor, float Damage, float OnHitTime,
+		const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation);
 
 protected:
 	// BeginPlay override
@@ -25,19 +26,20 @@ protected:
 	 *	Play on hit animation, RPC and multicast
 	 */
 	UFUNCTION(Server, Reliable)
-	void ServerOnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void ServerOnHitEvent(AActor* OtherActor, float Damage, float OnHitTime,
+		const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastOnHitEvent(const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void MulticastOnHitEvent(const FTransform& CurrentTransform, const FVector& CurrentLocation);
 	
 private:
 	// Projectile subclass, spawn from projectile weapon
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AProjectile> ProjectileClass;
-
+	
 	// Projectile pointer
 	UPROPERTY()
-	AProjectile* Projectile;
+	AProjectile* SpawnProjectile;
 
 	// Tracer, sound for projectile hit impacts
 	UPROPERTY(EditAnywhere)
@@ -54,5 +56,8 @@ private:
 	void ResetFireCooldown();
 	
 	// Play firing on hit anim
-	void PlayFireOnhitAnim(const FTransform& ProjectileTransform, const FVector& ProjectileLocation);
+	void PlayFireOnhitAnim(const FTransform& Transform, const FVector& Location);
+
+	// Server validation margin distance
+	float MarginDistance = 350.f;
 };

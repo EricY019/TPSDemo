@@ -23,12 +23,16 @@ AProjectile::AProjectile()
 	// Create projectile movement component
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true; // projectile rotation following movement
+	ProjectileMovementComponent->ProjectileGravityScale = 0.0f; // disable gravity
 }
 
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Record spawning property
+	SpawnLocation = GetActorLocation();
+	
 	if (Tracer)
 	{	// Spawn tracer component attached to projectile
 		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
@@ -43,20 +47,16 @@ void AProjectile::BeginPlay()
 	CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	FVector NormalImpulse, const FHitResult& Hit)
-{	// Called on clients, which spawns projectile
-
-	// RPC, then multicast on hit animation on weapon class
-	FTransform Transform = GetActorTransform();
-	FVector Location = GetActorLocation();
+void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{	// Called on clients that spawns projectile
+	float OnHitTime = GetWorld()->GetTimeSeconds();
 	if (OwningWeapon == nullptr)
 	{
 		OwningWeapon = Cast<AProjectileWeapon>(GetOwner());
 	}
 	if (OwningWeapon)
 	{
-		OwningWeapon->OnHitEvent(OtherActor, OwningWeapon, Damage, Transform, Location);
+		OwningWeapon->OnHitEvent(OtherActor, Damage, OnHitTime, GetActorTransform(), GetActorLocation(), SpawnLocation);
 	}
 	
 	Destroy();

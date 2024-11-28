@@ -19,6 +19,21 @@ class ADemoPlayerController;
 class AController;
 struct FInputActionValue;
 
+USTRUCT()
+struct FPositionHistoryEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector Position;
+
+	UPROPERTY()
+	float Time;
+
+	FPositionHistoryEntry() : Position(FVector::ZeroVector), Time(0.0f) {}
+	FPositionHistoryEntry(const FVector& InPosition, float InTime) : Position(InPosition), Time(InTime) {}
+};
+
 /**
  * 
  */
@@ -54,10 +69,15 @@ public:
 	void PlayHitReactMontage();
 	// Override OnRep_ReplicatedMovement
 	virtual void OnRep_ReplicatedMovement() override;
-	
 	// Multicast, when player is eliminated
 	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
+	// RPC, update position on server
+	UFUNCTION(Server, Reliable)
+	void ServerUpdatePosition(const FVector& NewPosition, float TimeStamp);
+	// Retrieves the position of the player at a specific time, called on server
+	FVector GetPositionAtTime(float ServerTime) const;
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -170,6 +190,10 @@ private:
 	
 	bool bElimmed = false;
 
+	// Max history location duration in seconds, default 1s
+	UPROPERTY(EditDefaultsOnly, Category = "Position History")
+	float MaxHistoryDuration = 1.0f;
+
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
@@ -178,6 +202,10 @@ public:
 	// Player health, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health = 100.f;
+
+	// Circular list to store past positions with timestamp index, server-side update, replicated variable
+	UPROPERTY(Replicated)
+	TArray<FPositionHistoryEntry> PositionHistory;
 
 	// Getters
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }

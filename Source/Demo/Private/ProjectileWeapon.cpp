@@ -28,22 +28,23 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 	const USkeletalMeshSocket* MuzzleSocket = GetWeaponMesh()->GetSocketByName(FName("Muzzle"));
 	if (MuzzleSocket)
 	{
-		FTransform SocketTransform = MuzzleSocket->GetSocketTransform(GetWeaponMesh());
 		// from muzzle socket to hit location from TraceUnderCrosshairs
+		FTransform SocketTransform = MuzzleSocket->GetSocketTransform(GetWeaponMesh());
 		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
 		FRotator TargetRotation = ToTarget.Rotation();
+		
 		if (ProjectileClass && InstigatorPawn)
 		{
+			// Spawn parameters
 			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this; // set owner of projectile to this weapon
+			SpawnParams.Owner = this;
 			SpawnParams.Instigator = InstigatorPawn;
 			if (UWorld* World = GetWorld())
-			{	// spawn projectile in world
-				Projectile = World->SpawnActor<AProjectile>(ProjectileClass,
-					SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-				if (Projectile)
-				{	// set owning weapon
-					Projectile->OwningWeapon = this;
+			{
+				SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+				if (SpawnProjectile)
+				{	// Set projectile properties
+					SpawnProjectile->OwningWeapon = this;
 				}
 			}
 		}
@@ -55,45 +56,66 @@ void AProjectileWeapon::ResetFireCooldown()
 	bCanFire = true;
 }
 
-void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::PlayFireOnhitAnim(const FTransform& Transform, const FVector& Location)
 {
 	if (ImpactParticles)
 	{	// spawn impact particles at on hit location
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, ProjectileTransform);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, Transform);
 	}
 	if (ImpactSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, ProjectileLocation);
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, Location);
 	}
 }
 
-void AProjectileWeapon::OnHitEvent(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::OnHitEvent(AActor* OtherActor, float Damage, float OnHitTime,
+	const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation)
 {
-	// projectile on hit animation
-	PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
-	ServerOnHitEvent(OtherActor, CausingWeapon, Damage, ProjectileTransform, ProjectileLocation);
+	ServerOnHitEvent(OtherActor, Damage, OnHitTime, CurrentTransform, CurrentLocation, SpawnLocation);
 }
 
-void AProjectileWeapon::ServerOnHitEvent_Implementation(AActor* OtherActor, AWeapon* CausingWeapon, const float& Damage, const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
+void AProjectileWeapon::ServerOnHitEvent_Implementation(AActor* OtherActor, float Damage, float OnHitTime,
+	const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation)
 {
-	// Apply damage authoritatively on server, damage replicated to clients with anim montage
-	if (ACharacter* InstigatorCharacter = Cast<ACharacter>(CausingWeapon->GetOwner()))
+	// Determine if hit a character
+	if (ADemoCharacter* HitCharacter = Cast<ADemoCharacter>(OtherActor))
 	{
-		if (AController* InstigatorController = InstigatorCharacter->GetController())
+		// Validation - find hit actor past location
+		FVector CharacterLocation = HitCharacter->GetPositionAtTime(OnHitTime);
+
+		// Validation - determine the distance from actor location to bullet trace
+		FVector ShootDirection = CurrentLocation - SpawnLocation;
+		ShootDirection.Normalize();
+		
+		FVector ToCharacter = CharacterLocation - SpawnLocation;
+		float ProjectionLength = FVector::DotProduct(ToCharacter, ShootDirection);
+
+		FVector ProjectionPoint = SpawnLocation + ShootDirection * ProjectionLength;
+		float Distance = FVector::Distance(CharacterLocation, ProjectionPoint);
+
+		if (Distance > MarginDistance)
 		{
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, InstigatorController, CausingWeapon, UDamageType::StaticClass());
+			UE_LOG(LogTemp, Warning, TEXT("Larger than MarginDistance"));
+			return;
+		}
+		
+		// Apply damage authoritatively on server, damage replicated to clients with anim montage
+		if (ACharacter* InstigatorCharacter = Cast<ACharacter>(this->GetOwner()))
+		{
+			if (AController* InstigatorController = InstigatorCharacter->GetController())
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, InstigatorController, this, UDamageType::StaticClass());
+			}
 		}
 	}
+	
 
-	// multicast to other clients
-	MulticastOnHitEvent(ProjectileTransform, ProjectileLocation);
+	// Multicast to other clients
+	MulticastOnHitEvent(CurrentTransform, CurrentLocation);
 }
 
-void AProjectileWeapon::MulticastOnHitEvent_Implementation(const FTransform& ProjectileTransform, const FVector& ProjectileLocation)
-{	// projectile on hit animation
-	ADemoCharacter* OwnerCharacter = Cast<ADemoCharacter>(GetOwner());
-	if (OwnerCharacter && !(OwnerCharacter->IsLocallyControlled()))
-	{
-		PlayFireOnhitAnim(ProjectileTransform, ProjectileLocation);
-	}
+void AProjectileWeapon::MulticastOnHitEvent_Implementation(const FTransform& CurrentTransform, const FVector& CurrentLocation)
+{
+	// Play projectile on hit animation
+	PlayFireOnhitAnim(CurrentTransform, CurrentLocation);
 }
