@@ -1,6 +1,8 @@
 #include "Demo/Public/DemoGameMode.h"
 #include "UObject/ConstructorHelpers.h"
 #include "DemoCharacter.h"
+#include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerController/DemoPlayerController.h"
 
 ADemoGameMode::ADemoGameMode()
@@ -18,5 +20,23 @@ void ADemoGameMode::PlayerEliminated(ADemoCharacter* ElimmedCharacter, ADemoPlay
 	if (ElimmedCharacter)
 	{
 		ElimmedCharacter->Elim();
+	}
+}
+
+void ADemoGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController)
+{
+	if (ElimmedCharacter)
+	{
+		// Reset and elim target character
+		ElimmedCharacter->Reset();
+		ElimmedCharacter->Destroy();
+	}
+	if (ElimmedController)
+	{
+		TArray<AActor*> PlayerStarts;
+		// Fill the PlayerStarts, choose random to respawn
+	    UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
+		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
+		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
 	}
 }

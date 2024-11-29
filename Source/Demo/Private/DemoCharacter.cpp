@@ -14,6 +14,7 @@
 #include "Demo/Demo.h"
 #include "PlayerController/DemoPlayerController.h"
 #include "DemoGameMode.h"
+#include "TimerManager.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -96,10 +97,24 @@ void ADemoCharacter::ServerUpdatePosition_Implementation(const FVector& NewPosit
 	}
 }
 
-void ADemoCharacter::Elim_Implementation()
+void ADemoCharacter::Elim()
+{	// Called on server
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ADemoCharacter::ElimTimerFinished, ElimDelay);
+}
+
+void ADemoCharacter::MulticastElim_Implementation()
 {	// Called on clients
 	bElimmed = true;
 	PlayElimMontage(); // Play eliminated animation
+}
+
+void ADemoCharacter::ElimTimerFinished()
+{
+	if (ADemoGameMode* DemoGameMode = GetWorld()->GetAuthGameMode<ADemoGameMode>())
+	{
+		DemoGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 FVector ADemoCharacter::GetPositionAtTime(float ServerTime) const

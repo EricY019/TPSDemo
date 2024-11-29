@@ -69,9 +69,11 @@ public:
 	void PlayHitReactMontage();
 	// Override OnRep_ReplicatedMovement
 	virtual void OnRep_ReplicatedMovement() override;
-	// Multicast, when player is eliminated
-	UFUNCTION(NetMulticast, Reliable)
+	// On server elim
 	void Elim();
+	// Multicast elim, when player is eliminated
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
 	// RPC, update position on server
 	UFUNCTION(Server, Reliable)
 	void ServerUpdatePosition(const FVector& NewPosition, float TimeStamp);
@@ -176,23 +178,28 @@ private:
 	float ProxyYaw;
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed();
-
-	/*
-	 * Player health
-	 */
+	
+	// Player health
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float MaxHealth = 100.f;
-
+	ADemoPlayerController* DemoPlayerController;
+	
 	UFUNCTION()
 	void OnRep_Health();
 
-	ADemoPlayerController* DemoPlayerController;
 	
+	// Elimmed
 	bool bElimmed = false;
+	FTimerHandle ElimTimer;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 1.f; // Elim animation in seconds
 
+	void ElimTimerFinished();
+	
 	// Max history location duration in seconds, default 1s
 	UPROPERTY(EditDefaultsOnly, Category = "Position History")
-	float MaxHistoryDuration = 1.0f;
+	float MaxHistoryDuration = 0.9f;
 
 public:
 	// OverlappingWeapon, replicated variable

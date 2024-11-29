@@ -21,4 +21,5 @@ public:
 
 	// Called when player is eliminated
 	virtual void PlayerEliminated(ADemoCharacter* ElimmedCharacter, ADemoPlayerController* VictimController, ADemoPlayerController* AttackerController);
+	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 };
