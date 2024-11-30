@@ -15,6 +15,7 @@
 #include "PlayerController/DemoPlayerController.h"
 #include "DemoGameMode.h"
 #include "TimerManager.h"
+#include "Components/CapsuleComponent.h"
 
 ADemoCharacter::ADemoCharacter()
 {
@@ -99,6 +100,10 @@ void ADemoCharacter::ServerUpdatePosition_Implementation(const FVector& NewPosit
 
 void ADemoCharacter::Elim()
 {	// Called on server
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ADemoCharacter::ElimTimerFinished, ElimDelay);
 }
@@ -106,7 +111,19 @@ void ADemoCharacter::Elim()
 void ADemoCharacter::MulticastElim_Implementation()
 {	// Called on clients
 	bElimmed = true;
-	PlayElimMontage(); // Play eliminated animation
+	PlayElimMontage();
+
+	// Disable movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (DemoPlayerController)
+	{
+		DisableInput(DemoPlayerController);
+		
+	}
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ADemoCharacter::ElimTimerFinished()
@@ -311,6 +328,8 @@ void ADemoCharacter::ServerEquipButtonPressed_Implementation()
 
 void ADemoCharacter::EquipButtonPressed()
 {
+	// disbale equip button if the character has an equipped weapon
+	if (IsWeaponEquipped()) return;
 	if (Combat)
 	{
 		if (HasAuthority()) // server-side
@@ -508,6 +527,9 @@ void ADemoCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	{
 		OverlappingWeapon->ShowPickUpWidget(false);
 	}
+	// do not show pick up widget of other weapon if the character has an equipped weapon
+	if (IsWeaponEquipped()) return;
+	
 	OverlappingWeapon = Weapon;
 	if (IsLocallyControlled()) // true if this character is controlled by local player (server player)
 	{

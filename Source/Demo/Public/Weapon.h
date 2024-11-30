@@ -45,6 +45,9 @@ public:
 	void PlayFireAnim();
 	// Firing function called on clients
 	virtual void Fire(const FVector& HitTarget);
+	// Drop weapon
+	void Dropped();
+	
 	/**
 	 * Textures for weapon crosshairs
 	 */
@@ -71,7 +74,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 30.f;
-	
 	
 protected:
 	// Called when the game starts or when spawned

@@ -193,13 +193,13 @@ private:
 	FTimerHandle ElimTimer;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float ElimDelay = 1.f; // Elim animation in seconds
+	float ElimDelay = 0.9f; // Elim animation in seconds
 
 	void ElimTimerFinished();
 	
 	// Max history location duration in seconds, default 1s
 	UPROPERTY(EditDefaultsOnly, Category = "Position History")
-	float MaxHistoryDuration = 0.9f;
+	float MaxHistoryDuration = 1.f;
 
 public:
 	// OverlappingWeapon, replicated variable
