@@ -15,6 +15,7 @@
 #include "PlayerController/DemoPlayerController.h"
 #include "DemoGameMode.h"
 #include "TimerManager.h"
+#include "CharacterComponents/RunSlideMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
 ADemoCharacter::ADemoCharacter()
@@ -54,6 +55,9 @@ ADemoCharacter::ADemoCharacter()
 
 	// Create Combat, replicated component
 	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
+
+	// Create run slide movement
+	RunSlideMovement = CreateDefaultSubobject<URunSlideMovementComponent>("RunSlideMovement");
 
 	// Turning in place
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -227,15 +231,8 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		// Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ADemoCharacter::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ADemoCharacter::FireButtonReleased);
-	}
-}
-
-void ADemoCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	if (Combat)
-	{
-		Combat->Character = this;
+		// Run Slide
+		EnhancedInputComponent->BindAction(RunSlideAction, ETriggerEvent::Triggered, this, &ADemoCharacter::RunSlideButtonPressed);
 	}
 }
 
@@ -328,7 +325,7 @@ void ADemoCharacter::ServerEquipButtonPressed_Implementation()
 
 void ADemoCharacter::EquipButtonPressed()
 {
-	// disbale equip button if the character has an equipped weapon
+	// disable equip button if the character has an equipped weapon
 	if (IsWeaponEquipped()) return;
 	if (Combat)
 	{
@@ -372,6 +369,14 @@ void ADemoCharacter::FireButtonReleased()
 	if (Combat)
 	{
 		Combat->FireButtonPressed(false);
+	}
+}
+
+void ADemoCharacter::RunSlideButtonPressed()
+{
+	if (RunSlideMovement)
+	{
+		RunSlideMovement->InitiateSlide();
 	}
 }
 

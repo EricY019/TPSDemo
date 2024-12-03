@@ -15,6 +15,7 @@ class DEMO_API ADemoPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
+	// Set HUD health bar and text
 	void SetHUDHealth(float Health, float MaxHealth);
 
 protected:
@@ -22,5 +23,4 @@ protected:
 
 private:
 	ADemoHUD* DemoHUD;
-	
 };

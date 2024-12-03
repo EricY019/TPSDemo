@@ -65,10 +65,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	UTexture2D* CrosshairsBottom;
-
-	/**
-	 * Zoomed FOV while aiming, modified in every weapon
-	 */
+	
+	// Zoomed FOV while aiming, modified in every weapon
 	UPROPERTY(EditAnywhere)
 	float ZoomedFOV = 50.f;
 

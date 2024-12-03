@@ -22,7 +22,7 @@ class DEMO_API UCombatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
-	// DemoCharacter can access members of CombatComponent
+	// DemoCharacter can access private members of CombatComponent
 	friend class ADemoCharacter;
 	// Set replicates
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -44,12 +44,9 @@ protected:
 	void OnRep_EquippedWeapon();
 	// Called when fire button pressed
 	void FireButtonPressed(bool bPressed);
-	/*
-	 * Play firing animation, RPC and multicast
-	 */
+	// Play firing animation, RPC and multicast
 	UFUNCTION(Server, Reliable)
 	void ServerFire();
-	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
 	// Build trace given a hit result
@@ -61,11 +58,9 @@ private:
 	ADemoCharacter* Character;
 	APlayerController* Controller;
 	ADemoHUD* HUD;
-	
 	bool bFireButtonPressed;
-	/**
-	 * HUD and Crosshairs
-	 */
+	
+	// HUD and Crosshairs
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
 	float CrosshairAimFactor;
@@ -74,9 +69,7 @@ private:
 	FVector HitTarget;
 	FHUDPackage HUDPackage;
 
-	/*
-	 * Aiming and FOV
-	 */
+	// Aiming and FOV
 	// Field of view when not aiming, set to the camera's base FOV in BeginPlay
 	float DefaultFOV;
 	float CurrentFOV;

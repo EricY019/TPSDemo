@@ -92,10 +92,10 @@ void AProjectileWeapon::ServerOnHitEvent_Implementation(AActor* OtherActor, floa
 
 		FVector ProjectionPoint = SpawnLocation + ShootDirection * ProjectionLength;
 		float Distance = FVector::Distance(CharacterLocation, ProjectionPoint);
-
+		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), Distance);
+		
 		if (Distance > MarginDistance)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Larger than MarginDistance"));
 			return;
 		}
 		

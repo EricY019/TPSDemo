@@ -26,6 +26,7 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Character = Cast<ADemoCharacter>(GetOwner());
 	// Init FOV
 	if (Character && Character->GetFollowCamera())
 	{
@@ -59,7 +60,6 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 		HUD = HUD == nullptr ? Cast<ADemoHUD>(Controller->GetHUD()) : HUD;
 		if (HUD)
 		{
-			
 			if (EquippedWeapon)
 			{	// Set HUD only when equipped
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;

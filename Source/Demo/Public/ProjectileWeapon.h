@@ -20,11 +20,9 @@ public:
 		const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation);
 
 protected:
-	// BeginPlay override
 	virtual void BeginPlay() override;
-	/*
-	 *	Play on hit animation, RPC and multicast
-	 */
+	
+	// Play on hit animation, RPC and multicast
 	UFUNCTION(Server, Reliable)
 	void ServerOnHitEvent(AActor* OtherActor, float Damage, float OnHitTime,
 		const FTransform& CurrentTransform, const FVector& CurrentLocation, const FVector& SpawnLocation);
@@ -59,5 +57,5 @@ private:
 	void PlayFireOnhitAnim(const FTransform& Transform, const FVector& Location);
 
 	// Server validation margin distance
-	float MarginDistance = 350.f;
+	float MarginDistance = 400.f;
 };

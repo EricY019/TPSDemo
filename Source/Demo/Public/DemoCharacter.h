@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterComponents/RunSlideMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Demo/Public/CharacterTypes/TurningInPlace.h"
 #include "Demo/Public/Interfaces/InteractWithCrosshairsInterface.h"
@@ -17,6 +18,7 @@ class UCombatComponent;
 class UAnimMontage;
 class ADemoPlayerController;
 class AController;
+class URunSlideMovementComponent;
 struct FInputActionValue;
 
 USTRUCT()
@@ -53,8 +55,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// Called on server, set OverlappingWeapon as weapon
 	void SetOverlappingWeapon(AWeapon* Weapon);
-	// Init component reference
-	virtual void PostInitializeComponents() override;
 	// Determines if this character equips weapon
 	bool IsWeaponEquipped();
 	// Determines if this character is aiming
@@ -84,7 +84,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Handle 2d move, 2d camera turn, equip weapon, aim, fire
+	// Handle 2d move, 2d camera turn, equip weapon, aim, fire, run sldie
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
@@ -92,6 +92,7 @@ protected:
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void RunSlideButtonPressed();
 	// Obtain aiming offset, called per frame
 	void AimOffset(float DeltaTime);
 	// Calculate AO_Pitch
@@ -117,7 +118,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMapping;
 
-	// Enhanced input components: Jump, move, look, equip, aim
+	// Enhanced input components: Jump, move, look, equip, aim, fire, slide
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 	
@@ -135,6 +136,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* RunSlideAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -157,10 +161,8 @@ private:
 	// Turning in place
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
-
-	/*
-	 * Animation montages
-	 */
+	
+	// Animation montages
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	UAnimMontage* FireWeaponMontage;
 	
@@ -186,20 +188,23 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Health();
-
 	
-	// Elimmed
+	// Eliminated functions 
 	bool bElimmed = false;
 	FTimerHandle ElimTimer;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float ElimDelay = 0.9f; // Elim animation in seconds
+	float ElimDelay = 0.9f;
 
 	void ElimTimerFinished();
 	
-	// Max history location duration in seconds, default 1s
+	// Max history location duration in seconds, default 1.5s
 	UPROPERTY(EditDefaultsOnly, Category = "Position History")
-	float MaxHistoryDuration = 1.f;
+	float MaxHistoryDuration = 1.5f;
+
+	// Run slide movement component
+	UPROPERTY(VisibleAnywhere)
+	URunSlideMovementComponent* RunSlideMovement;
 
 public:
 	// OverlappingWeapon, replicated variable
@@ -221,4 +226,5 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const {return bElimmed; }
+	FORCEINLINE bool IsSliding() const {return RunSlideMovement->bIsSliding; }
 };
