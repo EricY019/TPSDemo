@@ -8,8 +8,6 @@ URunSlideMovementComponent::URunSlideMovementComponent()
 {
 	// Init default
 	bIsSliding = false;
-	SlideDuration = 0.9f;
-	SlideSpeedMultiplier = 1.2f;
 	
 	SetIsReplicatedByDefault(true); // replicating component
 }
@@ -62,10 +60,18 @@ void URunSlideMovementComponent::Multicast_InitiateSlide_Implementation()
 
 void URunSlideMovementComponent::StartSlide()
 {
-	// Play sliding anim
-	bIsSliding = true;
 	// Adjust max walk speed
 	Character->GetCharacterMovement()->MaxWalkSpeed *= SlideSpeedMultiplier;
+	
+	// Play sliding anim
+	bIsSliding = true;
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && RunSlideMontage)
+	{
+		AnimInstance->Montage_Play(RunSlideMontage);
+		AnimInstance->Montage_JumpToSection(FName("Default"));
+	}
+	
 	// Set timer to stop slide after duration
 	if (Character && Character->GetWorld())
 	{
@@ -76,12 +82,17 @@ void URunSlideMovementComponent::StartSlide()
 
 void URunSlideMovementComponent::StopSlide()
 {
-	// Stop sliding anim
-	bIsSliding = false;
-	
 	// Revert max walk speed
 	Character->GetCharacterMovement()->MaxWalkSpeed = OriginalMaxWalkSpeed;
-
+	
+	// Stop sliding anim
+	bIsSliding = false;
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Stop(0.2f);
+	}
+	
 	// Clear timer
 	if (Character && Character->GetWorld())
 	{

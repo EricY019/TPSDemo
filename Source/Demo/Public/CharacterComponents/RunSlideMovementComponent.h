@@ -20,10 +20,10 @@ public:
 	friend class ADemoCharacter;
 	// Run-slide duration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movements")
-	float SlideDuration;
+	float SlideDuration = 2.f;
 	// MaxSlideSpeed = MaxWalkSpeed * SlideSpeedMultiplier
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movements")
-	float SlideSpeedMultiplier;
+	float SlideSpeedMultiplier = 1.2f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movements")
 	float OriginalMaxWalkSpeed;
 	// Play stop animation
@@ -52,4 +52,7 @@ protected:
 	
 private:
 	ADemoCharacter* Character;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	UAnimMontage* RunSlideMontage;
 };
