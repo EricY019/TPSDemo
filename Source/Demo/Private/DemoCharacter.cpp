@@ -15,11 +15,16 @@
 #include "PlayerController/DemoPlayerController.h"
 #include "DemoGameMode.h"
 #include "TimerManager.h"
-#include "CharacterComponents/RunSlideMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CharacterComponents/DemoCharacterMovementComponent.h"
 
-ADemoCharacter::ADemoCharacter()
+ADemoCharacter::ADemoCharacter(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer.SetDefaultSubobjectClass<UDemoCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
+	// Custom character movement component
+	DemoCharacterMovementComponent = Cast<UDemoCharacterMovementComponent>(GetCharacterMovement());
+	DemoCharacterMovementComponent->SetIsReplicated(true);
+	
 	PrimaryActorTick.bCanEverTick = true;
 	
 	// Disable character rotation when camera rotates
@@ -55,10 +60,7 @@ ADemoCharacter::ADemoCharacter()
 
 	// Create Combat, replicated component
 	Combat = CreateDefaultSubobject<UCombatComponent>("CombatComponent");
-
-	// Create run slide movement
-	RunSlideMovement = CreateDefaultSubobject<URunSlideMovementComponent>("RunSlideMovement");
-
+	
 	// Turning in place
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	
@@ -167,6 +169,12 @@ FVector ADemoCharacter::GetPositionAtTime(float ServerTime) const
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Recover movement component
+	if (!DemoCharacterMovementComponent)
+	{
+		DemoCharacterMovementComponent = Cast<UDemoCharacterMovementComponent>(GetCharacterMovement());
+	}
 	
 	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f); // Aiming offset bug fix, init value
 	UpdateHUDHealth();
@@ -231,8 +239,9 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		// Fire
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ADemoCharacter::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ADemoCharacter::FireButtonReleased);
-		// Run Slide
-		EnhancedInputComponent->BindAction(RunSlideAction, ETriggerEvent::Triggered, this, &ADemoCharacter::RunSlideButtonPressed);
+		// Sprint
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ADemoCharacter::SprintButtonPressed);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ADemoCharacter::SprintButtonReleased);
 	}
 }
 
@@ -372,11 +381,19 @@ void ADemoCharacter::FireButtonReleased()
 	}
 }
 
-void ADemoCharacter::RunSlideButtonPressed()
+void ADemoCharacter::SprintButtonPressed()
 {
-	if (RunSlideMovement)
+	if (DemoCharacterMovementComponent)
 	{
-		RunSlideMovement->InitiateSlide();
+		DemoCharacterMovementComponent->SprintPressed();
+	}
+}
+
+void ADemoCharacter::SprintButtonReleased()
+{
+	if (DemoCharacterMovementComponent)
+	{
+		DemoCharacterMovementComponent->SprintReleased();
 	}
 }
 
@@ -555,4 +572,16 @@ void ADemoCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	{
 		LastWeapon->ShowPickUpWidget(false);
 	}
+}
+
+FCollisionQueryParams ADemoCharacter::GetIgnoreCharacterParams() const
+{
+	FCollisionQueryParams Params;
+
+	TArray<AActor*> CharacterChildren;
+	GetAllChildActors(CharacterChildren);
+	Params.AddIgnoredActors(CharacterChildren);
+	Params.AddIgnoredActor(this);
+
+	return Params;
 }

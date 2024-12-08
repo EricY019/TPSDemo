@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CharacterComponents/RunSlideMovementComponent.h"
+#include "CharacterComponents/DemoCharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Demo/Public/CharacterTypes/TurningInPlace.h"
 #include "Demo/Public/Interfaces/InteractWithCrosshairsInterface.h"
@@ -18,7 +16,7 @@ class UCombatComponent;
 class UAnimMontage;
 class ADemoPlayerController;
 class AController;
-class URunSlideMovementComponent;
+class UDemoCharacterMovementComponent;
 struct FInputActionValue;
 
 USTRUCT()
@@ -46,7 +44,7 @@ class DEMO_API ADemoCharacter : public ACharacter, public IInteractWithCrosshair
 
 public:
 	// Sets default values for this character's properties
-	ADemoCharacter();
+	ADemoCharacter(const FObjectInitializer& ObjectInitializer);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	// Called to bind functionality to input
@@ -79,12 +77,17 @@ public:
 	void ServerUpdatePosition(const FVector& NewPosition, float TimeStamp);
 	// Retrieves the position of the player at a specific time, called on server
 	FVector GetPositionAtTime(float ServerTime) const;
-	
-	
+	// Return collision ignore params
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
+
 protected:
+	// Character Movement Component
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	UDemoCharacterMovementComponent* DemoCharacterMovementComponent;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Handle 2d move, 2d camera turn, equip weapon, aim, fire, run sldie
+	// Handle 2d move, 2d camera turn, equip weapon, aim, fire, sprint
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
@@ -92,7 +95,8 @@ protected:
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
-	void RunSlideButtonPressed();
+	void SprintButtonPressed();
+	void SprintButtonReleased();
 	// Obtain aiming offset, called per frame
 	void AimOffset(float DeltaTime);
 	// Calculate AO_Pitch
@@ -138,7 +142,7 @@ private:
 	UInputAction* FireAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	UInputAction* RunSlideAction;
+	UInputAction* SprintAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -202,10 +206,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Position History")
 	float MaxHistoryDuration = 1.5f;
 
-	// Run slide movement component
-	UPROPERTY(VisibleAnywhere)
-	URunSlideMovementComponent* RunSlideMovement;
-
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
@@ -226,5 +226,4 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const {return bElimmed; }
-	FORCEINLINE bool IsSliding() const {return RunSlideMovement->bIsSliding; }
 };
