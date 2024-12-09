@@ -1,4 +1,4 @@
-## A Third Person Shooting Game Demo Using Unreal Engine
+## A Third Person Shooter Game Demo Using Unreal Engine
 
 UE Version: 5.4
 
