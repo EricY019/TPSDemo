@@ -67,7 +67,7 @@ private:
 	bool bRotateRootBone; // rotate root bone
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
-	bool bElimmed; // is elimintaed
+	bool bElimmed; // is eliminated
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	bool bSliding; // is sliding

@@ -27,7 +27,9 @@ class DEMO_API UDemoCharacterMovementComponent : public UCharacterMovementCompon
 	{
 		typedef FSavedMove_Character Super;
 		uint8 Saved_bWantsToSprint:1;
-
+		uint8 Saved_bWantsToSlide:1;
+		
+	public:
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
 		virtual void Clear() override;
 		virtual uint8 GetCompressedFlags() const override;
@@ -53,25 +55,38 @@ public:
 	// Client prediction
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
-	// Sprint non-safe functions, only callable on the clients
+	// Sprint non-safe functions, only callable on clients
 	UFUNCTION(BlueprintCallable)
 	void SprintPressed();
 	UFUNCTION(BlueprintCallable)
 	void SprintReleased();
+	// Sliding non-safe functions, only callable on clients
+	UFUNCTION(BlueprintCallable)
+	void SlidePressed();
 	
 	// General custom movement mode feature
 	UFUNCTION(BlueprintPure)
 	bool IsCustomMovementMode(ECustomMovementMode InCustomMovementMode) const;
 
-	// Sliding params
-	UPROPERTY(EditDefaultsOnly)
+	// Sprint params
+	UPROPERTY(EditDefaultsOnly, Category = "Sprint")
+	float Sprint_MaxWalkSpeed;
+	UPROPERTY(EditDefaultsOnly, Category = "Sprint")
+	float Walk_MaxWalkSpeed;
+	
+	// Slide Params
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	float Slide_MinSpeed = 350;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	float Slide_EnterImpulse = 500;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	float Slide_GravityForce = 5000; // keep the player to the ground, on the slope
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	float Slide_Friction = 1.3;
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
+	float DefaultCapsuleHalfHeight = 88.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
+	float SlideCapsuleHalfHeight = 44.0f;
 	
 	// Transient
 	UPROPERTY(Transient) ADemoCharacter* DemoCharacterOwner;
@@ -81,17 +96,20 @@ protected:
 	virtual void InitializeComponent() override;
 
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
-
+	
 	// Called at the end of every perform move
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 
+	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
+
+	// Physics that handles custom input movement mode
+	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
+
+	
 private:
-	// Sprint parameters
-	UPROPERTY(EditDefaultsOnly)
-	float Sprint_MaxWalkSpeed;
-	UPROPERTY(EditDefaultsOnly)
-	float Walk_MaxWalkSpeed;
+	// Safe booleans
 	bool Safe_bWantsToSprint;
+	bool Safe_bWantsToSlide;
 	
 	// Sliding functions
 	void EnterSlide();

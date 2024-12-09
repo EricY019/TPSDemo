@@ -65,6 +65,8 @@ public:
 	void PlayElimMontage();
 	// Play on hit montage
 	void PlayHitReactMontage();
+	// Play sliding montage
+	void PlaySlidingMontage();
 	// Override OnRep_ReplicatedMovement
 	virtual void OnRep_ReplicatedMovement() override;
 	// On server elim
@@ -79,6 +81,11 @@ public:
 	FVector GetPositionAtTime(float ServerTime) const;
 	// Return collision ignore params
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
+	// Animation, called when slide starts
+	UFUNCTION(BlueprintNativeEvent, Category = "Movement")
+	void OnStartSlide();
+	UFUNCTION(BlueprintNativeEvent, Category = "Movement")
+	void OnStopSlide();
 
 protected:
 	// Character Movement Component
@@ -87,7 +94,7 @@ protected:
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	// Handle 2d move, 2d camera turn, equip weapon, aim, fire, sprint
+	// Handle 2d move, 2d camera turn, equip weapon, aim, fire, sprint, slide
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
@@ -97,6 +104,7 @@ protected:
 	void FireButtonReleased();
 	void SprintButtonPressed();
 	void SprintButtonReleased();
+	void SlideButtonPressed();
 	// Obtain aiming offset, called per frame
 	void AimOffset(float DeltaTime);
 	// Calculate AO_Pitch
@@ -122,7 +130,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMapping;
 
-	// Enhanced input components: Jump, move, look, equip, aim, fire, slide
+	// Enhanced input components: Jump, move, look, equip, aim, fire, sprint, slide
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 	
@@ -143,6 +151,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	UInputAction* SlideAction;
 	
 	// Called on client when OverlappingWeapon is replicated
 	UFUNCTION()
@@ -165,16 +176,6 @@ private:
 	// Turning in place
 	ETurningInPlace TurningInPlace;
 	void TurnInPlace(float DeltaTime);
-	
-	// Animation montages
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAnimMontage* FireWeaponMontage;
-	
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAnimMontage* HitReactMontage;
-
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	UAnimMontage* ElimMontage;
 
 	// Rotation for simulated proxy
 	bool bRotateRootBone;
@@ -206,6 +207,16 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Position History")
 	float MaxHistoryDuration = 1.5f;
 
+	// Animation montages
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* FireWeaponMontage;
+	
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* ElimMontage;
+
 public:
 	// OverlappingWeapon, replicated variable
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
@@ -219,6 +230,13 @@ public:
 	UPROPERTY(Replicated)
 	TArray<FPositionHistoryEntry> PositionHistory;
 
+	// Is Sliding, replicated variable
+	UPROPERTY(ReplicatedUsing = OnRep_Sliding)
+	bool bSliding;
+
+	UFUNCTION()
+	void OnRep_Sliding();
+
 	// Getters
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
 	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
@@ -226,4 +244,5 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const {return bElimmed; }
+	FORCEINLINE bool IsSliding() const {return bSliding; }
 };

@@ -34,6 +34,7 @@ void UDemoAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	TurningInPlace = DemoCharacter->GetTurningInPlace();
 	bRotateRootBone = DemoCharacter->ShouldRoatateRootBone();
 	bElimmed = DemoCharacter->IsElimmed();
+	bSliding = DemoCharacter->IsSliding();
 	// Update character yaw
 	FRotator AimRotation = DemoCharacter->GetBaseAimRotation();
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(Velocity);

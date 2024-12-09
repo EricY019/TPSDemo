@@ -11,6 +11,10 @@ bool UDemoCharacterMovementComponent::FSavedMove_Demo::CanCombineWith(const FSav
 	{
 		return false;
 	}
+	if (Saved_bWantsToSlide != NewDemoMove->Saved_bWantsToSlide)
+	{
+		return false;
+	}
 	
 	return FSavedMove_Character::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
@@ -21,16 +25,16 @@ void UDemoCharacterMovementComponent::FSavedMove_Demo::Clear()
 	FSavedMove_Character::Clear();
 
 	Saved_bWantsToSprint = 0;
+	Saved_bWantsToSlide = 0;
 }
 
 uint8 UDemoCharacterMovementComponent::FSavedMove_Demo::GetCompressedFlags() const
 {
 	// Send compressed flags to replicate data
 	uint8 Result = Super::GetCompressedFlags();
-	if (Saved_bWantsToSprint)
-	{
-		Result = FLAG_Custom_0; // custom flag
-	}
+	if (Saved_bWantsToSprint) Result |= FLAG_Custom_0;
+	if (Saved_bWantsToSlide) Result |= FLAG_Custom_1;
+
 	return Result;
 }
 
@@ -42,6 +46,7 @@ void UDemoCharacterMovementComponent::FSavedMove_Demo::SetMoveFor(ACharacter* C,
 	UDemoCharacterMovementComponent* CharacterMovement = Cast<UDemoCharacterMovementComponent>(C->GetCharacterMovement());
 
 	Saved_bWantsToSprint = CharacterMovement->Safe_bWantsToSprint;
+	Saved_bWantsToSlide = CharacterMovement->Safe_bWantsToSlide;
 }
 
 void UDemoCharacterMovementComponent::FSavedMove_Demo::PrepMoveFor(ACharacter* C)
@@ -52,6 +57,7 @@ void UDemoCharacterMovementComponent::FSavedMove_Demo::PrepMoveFor(ACharacter* C
 	UDemoCharacterMovementComponent* CharacterMovement = Cast<UDemoCharacterMovementComponent>(C->GetCharacterMovement());
 
 	CharacterMovement->Safe_bWantsToSprint = Saved_bWantsToSprint;
+	CharacterMovement->Safe_bWantsToSlide = Saved_bWantsToSlide;
 }
 
 UDemoCharacterMovementComponent::FNetworkPredictionData_Client_Demo::FNetworkPredictionData_Client_Demo(const UCharacterMovementComponent& ClientMovement) : Super(ClientMovement)
@@ -83,10 +89,12 @@ void UDemoCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Super::UpdateFromCompressedFlags(Flags);
 
 	Safe_bWantsToSprint = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+	Safe_bWantsToSlide = (Flags & FSavedMove_Character::FLAG_Custom_1) != 0;
 }
 
 UDemoCharacterMovementComponent::UDemoCharacterMovementComponent()
 {
+	Safe_bWantsToSlide = false;
 }
 
 void UDemoCharacterMovementComponent::InitializeComponent()
@@ -106,8 +114,14 @@ void UDemoCharacterMovementComponent::SprintReleased()
 	Safe_bWantsToSprint = false;
 }
 
-void UDemoCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
-	const FVector& OldVelocity)
+void UDemoCharacterMovementComponent::SlidePressed()
+{	
+	// enter sliding
+	if (Safe_bWantsToSlide) return;
+	Safe_bWantsToSlide = true;
+}
+
+void UDemoCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
 
@@ -124,22 +138,77 @@ void UDemoCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, cons
 	}
 }
 
+void UDemoCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
+{
+	if (MovementMode == MOVE_Walking && Safe_bWantsToSlide)
+	{
+		// Enter slide if gaining speed
+		FHitResult PotentialSlideSurface;
+		if (Velocity.SizeSquared() > pow(Slide_MinSpeed, 2) && GetSlideSurface(PotentialSlideSurface))
+		{
+			EnterSlide();
+		}
+	}
+
+	if (IsCustomMovementMode(CMOVE_Slide) && !Safe_bWantsToSlide)
+	{
+		// Exit Slide
+		ExitSlide();
+	}
+	
+	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
+}
+
+void UDemoCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterations)
+{
+	Super::PhysCustom(DeltaTime, Iterations);
+
+	switch (CustomMovementMode)
+	{
+	case CMOVE_Slide:
+		PhysSlide(DeltaTime, Iterations);
+		break;
+	default:
+		UE_LOG(LogTemp, Fatal, TEXT("Invalid Movement Mode"));
+	}
+}
+
 void UDemoCharacterMovementComponent::EnterSlide()
 {
-	bWantsToCrouch = true; // shorten capsule component - utilize crouching
+	Safe_bWantsToSlide = true;
+	bOrientRotationToMovement = false;
+	
+	// Add slide impulse in current velocity
 	Velocity += Velocity.GetSafeNormal2D() * Slide_EnterImpulse;
+	
+	// Set movement mode
 	SetMovementMode(MOVE_Custom, CMOVE_Slide);
+
+	// Notify animation blueprint
+	if (DemoCharacterOwner)
+	{
+		DemoCharacterOwner->OnStartSlide();
+	}
 }
 
 void UDemoCharacterMovementComponent::ExitSlide()
 {
-	bWantsToCrouch = false;
-
-	// Correct rotation
+	Safe_bWantsToSlide = false;
+	bOrientRotationToMovement = true;
+	
+	// Correct rotation to face movement direction
 	FQuat NewRotation = FRotationMatrix::MakeFromXZ(UpdatedComponent->GetForwardVector().GetSafeNormal2D(), FVector::UpVector).ToQuat();
 	FHitResult Hit;
 	SafeMoveUpdatedComponent(FVector::ZeroVector, NewRotation, true, Hit);
+
+	// Recover movement mode
 	SetMovementMode(MOVE_Walking);
+
+	// Notify animation blueprint
+	if (DemoCharacterOwner)
+	{
+		DemoCharacterOwner->OnStopSlide();
+	}
 }
 
 bool UDemoCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
@@ -155,8 +224,8 @@ void UDemoCharacterMovementComponent::PhysSlide(float DeltaTime, int32 Iteration
 	if (DeltaTime < MIN_TICK_TIME) return;
 	
 	RestorePreAdditiveRootMotionVelocity();
-
-	// Determine on surface
+	
+	// Determine if currently on surface
 	FHitResult SurfaceHit;
 	if (!GetSlideSurface(SurfaceHit) || Velocity.SizeSquared() < pow(Slide_MinSpeed, 2))
 	{
@@ -195,10 +264,9 @@ void UDemoCharacterMovementComponent::PhysSlide(float DeltaTime, int32 Iteration
 	FQuat OldRotation = UpdatedComponent->GetComponentRotation().Quaternion();
 	// Hit result, movement delta
 	FHitResult Hit(1.f);
-	FVector Adjusted = Velocity * DeltaTime; // x = v * dt
-	// Project velocity onto surface plane, create rotation matrix
-	FVector VelPlaneDir = FVector::VectorPlaneProject(Velocity, SurfaceHit.Normal).GetSafeNormal();
-	FQuat NewRotation = FRotationMatrix::MakeFromXZ(VelPlaneDir, SurfaceHit.Normal).ToQuat();
+	FVector Adjusted = Velocity * DeltaTime; // x = v * dz
+	// New Rotation
+	FQuat NewRotation = FRotationMatrix::MakeFromXZ(Velocity.GetSafeNormal2D(), FVector::UpVector).ToQuat();
 	// Move the component with desired rotation, collision checking (instead of changing capsule position)
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
 
