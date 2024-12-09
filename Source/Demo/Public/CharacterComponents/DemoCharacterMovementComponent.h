@@ -26,10 +26,11 @@ class DEMO_API UDemoCharacterMovementComponent : public UCharacterMovementCompon
 	class FSavedMove_Demo : public FSavedMove_Character
 	{
 		typedef FSavedMove_Character Super;
+	public:
 		uint8 Saved_bWantsToSprint:1;
 		uint8 Saved_bWantsToSlide:1;
 		
-	public:
+		FSavedMove_Demo();
 		virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
 		virtual void Clear() override;
 		virtual uint8 GetCompressedFlags() const override;
@@ -90,10 +91,19 @@ public:
 	
 	// Transient
 	UPROPERTY(Transient) ADemoCharacter* DemoCharacterOwner;
+
+	// Safe booleans
+	UPROPERTY(BlueprintReadWrite)
+	bool Safe_bWantsToSprint;
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	bool Safe_bWantsToSlide;
 	
 protected:
 	// Init Component
 	virtual void InitializeComponent() override;
+
+	// Replication
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	
@@ -107,10 +117,6 @@ protected:
 
 	
 private:
-	// Safe booleans
-	bool Safe_bWantsToSprint;
-	bool Safe_bWantsToSlide;
-	
 	// Sliding functions
 	void EnterSlide();
 	void ExitSlide();

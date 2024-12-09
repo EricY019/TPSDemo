@@ -2,11 +2,19 @@
 #include "DemoCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
+
+UDemoCharacterMovementComponent::FSavedMove_Demo::FSavedMove_Demo()
+{
+	Saved_bWantsToSprint = 0;
+	Saved_bWantsToSlide = 0;
+}
 
 bool UDemoCharacterMovementComponent::FSavedMove_Demo::CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const
 {
 	// Return false if sprint cannot be combined
 	FSavedMove_Demo* NewDemoMove = static_cast<FSavedMove_Demo*>(NewMove.Get());
+	
 	if (Saved_bWantsToSprint != NewDemoMove->Saved_bWantsToSprint)
 	{
 		return false;
@@ -94,7 +102,7 @@ void UDemoCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 
 UDemoCharacterMovementComponent::UDemoCharacterMovementComponent()
 {
-	Safe_bWantsToSlide = false;
+	NavAgentProps.bCanCrouch = true;
 }
 
 void UDemoCharacterMovementComponent::InitializeComponent()
@@ -102,6 +110,15 @@ void UDemoCharacterMovementComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	DemoCharacterOwner = Cast<ADemoCharacter>(GetOwner());
+	Safe_bWantsToSlide = false;
+}
+
+void UDemoCharacterMovementComponent::GetLifetimeReplicatedProps(
+	TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UDemoCharacterMovementComponent, Safe_bWantsToSlide, COND_SimulatedOnly);
 }
 
 void UDemoCharacterMovementComponent::SprintPressed()
@@ -183,12 +200,6 @@ void UDemoCharacterMovementComponent::EnterSlide()
 	
 	// Set movement mode
 	SetMovementMode(MOVE_Custom, CMOVE_Slide);
-
-	// Notify animation blueprint
-	if (DemoCharacterOwner)
-	{
-		DemoCharacterOwner->OnStartSlide();
-	}
 }
 
 void UDemoCharacterMovementComponent::ExitSlide()
@@ -203,12 +214,6 @@ void UDemoCharacterMovementComponent::ExitSlide()
 
 	// Recover movement mode
 	SetMovementMode(MOVE_Walking);
-
-	// Notify animation blueprint
-	if (DemoCharacterOwner)
-	{
-		DemoCharacterOwner->OnStopSlide();
-	}
 }
 
 bool UDemoCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const

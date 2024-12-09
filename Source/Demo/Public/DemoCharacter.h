@@ -81,11 +81,6 @@ public:
 	FVector GetPositionAtTime(float ServerTime) const;
 	// Return collision ignore params
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
-	// Animation, called when slide starts
-	UFUNCTION(BlueprintNativeEvent, Category = "Movement")
-	void OnStartSlide();
-	UFUNCTION(BlueprintNativeEvent, Category = "Movement")
-	void OnStopSlide();
 
 protected:
 	// Character Movement Component
@@ -230,13 +225,6 @@ public:
 	UPROPERTY(Replicated)
 	TArray<FPositionHistoryEntry> PositionHistory;
 
-	// Is Sliding, replicated variable
-	UPROPERTY(ReplicatedUsing = OnRep_Sliding)
-	bool bSliding;
-
-	UFUNCTION()
-	void OnRep_Sliding();
-
 	// Getters
 	FORCEINLINE float GetAOYaw() const {return AO_Yaw; }
 	FORCEINLINE float GetAOPitch() const {return AO_Pitch; }
@@ -244,5 +232,5 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera; }
 	FORCEINLINE bool ShouldRoatateRootBone() const {return bRotateRootBone; }
 	FORCEINLINE bool IsElimmed() const {return bElimmed; }
-	FORCEINLINE bool IsSliding() const {return bSliding; }
+	FORCEINLINE bool IsSliding() const {if (DemoCharacterMovementComponent) return DemoCharacterMovementComponent->Safe_bWantsToSlide; else return false; }
 };

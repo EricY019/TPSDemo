@@ -75,7 +75,6 @@ void ADemoCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	DOREPLIFETIME_CONDITION(ADemoCharacter, OverlappingWeapon, COND_OwnerOnly); // Replicate OverlappingWeapon to owner proxies
 	DOREPLIFETIME(ADemoCharacter, Health);
 	DOREPLIFETIME(ADemoCharacter, PositionHistory);
-	DOREPLIFETIME(ADemoCharacter, bSliding);
 }
 
 void ADemoCharacter::OnRep_ReplicatedMovement()
@@ -595,34 +594,4 @@ FCollisionQueryParams ADemoCharacter::GetIgnoreCharacterParams() const
 	Params.AddIgnoredActor(this);
 
 	return Params;
-}
-
-void ADemoCharacter::OnStartSlide_Implementation()
-{
-	bSliding = true;
-	if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Authority Slide started"));
-	}
-}
-
-void ADemoCharacter::OnStopSlide_Implementation()
-{
-	bSliding = false;
-	if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Authority Slide stopped"));
-	}
-}
-
-void ADemoCharacter::OnRep_Sliding()
-{
-	if (bSliding)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Sliding true On Rep"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Sliding false On Rep"));
-	}
 }
